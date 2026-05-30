@@ -1,0 +1,90 @@
+\section{Thuật toán Cooley--Tukey}
+
+\subsection{Ý tưởng}
+
+Xét bài toán tính chuỗi Fourier phức sau: \begin{equation}
+  \label{eq:fourier-series}
+  X(j) = \sum_{k = 0}^{N - 1} A(k) \cdot W^{jk}, \quad j = 0, 1, \dots, N-1,
+\end{equation} trong đó các hệ số Fourier $A(k)$ là các số phức và $W$ là căn
+bậc $N$ của 1, ví dụ $W = e^{2 \pi i /N}$. Cách tính thông thường sử dụng công
+thức \eqref{eq:fourier-series} cần $N^2$ thao tác, ``thao tác'' ở đây có nghĩa
+gồm một phép nhân phức và một phép cộng phức liền sau đó.
+
+Thuật toán Cooley--Tukey được mô tả sau đây cho kết quả với ít hơn $2N\log_2N$
+thao tác và yêu cầu bộ nhớ không quá yêu cầu để lưu trữ mảng cho trước $A$. Để
+mô tả thuật toán, giả sử $N$ là hợp số, tức là $N = r_1r_2$. Ta chia các chỉ số
+trong \eqref{eq:fourier-series} ra như sau:\begin{equation}
+  k = r_2k_1 + k_0, \quad k_0 = 0, 1, \dots, r_2 - 1, \quad k_1 = 0, 1, \dots,
+  r_1 - 1.
+\end{equation} Khi đó, ta có thể viết lại thành \begin{equation}
+  X(j) = \sum_{k_0} \sum_{k_1} A(k_1, k_0) \cdot W^{jk_1r_2} W^{jk_0}.
+\end{equation} Bởi vì \begin{equation}
+  W^{jk_1r_2} = W^{(j \bmod r_1)k_1r_2},
+\end{equation} nên tổng trong, lấy trên $k_1$, chỉ phụ thuộc vào $j \bmod r_1$
+và $k_0$ và có thể được định nghĩa thành một mảng mới, \begin{equation}
+  \label{eq:r1-fourier-series}
+  A_1(j \bmod r_1, k_0) = \sum_{k_1} A(k_1, k_0) \cdot W^{(j \bmod r_1)k_1r_2}.
+\end{equation} Và kết quả có thể viết lại thành \begin{equation}
+  \label{eq:r2-fourier-series}
+  X(j) = \sum_{k_0} A_1(j \bmod r_1, k_0) \cdot W^{jk_0}.
+\end{equation} Có $N$ phần tử trong mảng $A_1$, mỗi phần tử cần $r_1$ thao tác,
+dẫn đến cần $Nr_1$ thao tác để tính $A_1$. Tương tự, cần $Nr_2$ thao tác để
+tính $X$ từ $A_1$. Do đó, thuật toán hai bước này, dựa trên
+\eqref{eq:r1-fourier-series} và \eqref{eq:r2-fourier-series} cần tổng cộng
+\begin{equation}
+  T = N(r_1 + r_2)
+\end{equation} thao tác. Ta có thể mở rộng thuật toán trên với $m$ bước như
+sau. Giả sử $N = r_1r_2 \dots r_m$. Đặt \begin{equation}
+  R_n = \prod_{k = 1}^n r_k, \quad i = 1, 2, \dots, m.
+\end{equation} Ta chia các chỉ số như sau: \begin{equation}
+  k = \frac{N}{R_1}k_{m - 1} + \frac{N}{R_2}k_{m - 2} + \dots +
+  \frac{N}{R_m}k_0, \quad k_i = 0, 1, \dots, r_{m - i} - 1, \quad \forall i =
+  0, 1, \dots, m - 1.
+\end{equation} Để ý rằng $R_m = N$, khi đó \eqref{eq:fourier-series} có thể
+viết lại thành \begin{multline}
+  X(j) = \sum_{k_0}\sum_{k_1}\, \dots\, \sum_{k_{m - 1}}A(k_{m - 1}, k_{m - 2},
+  \dots, k_0) \cdot W^{j (N / R_1) k_{m - 1}} W^{j (N / R_2)
+  k_{m - 2}}\dotsm W^{j k_0}.
+\end{multline} hay \begin{multline}
+  X(j) = \sum_{k_0}\sum_{k_1}\, \dots\, \sum_{k_{m - 1}}A(k_{m - 1}, k_{m - 2},
+  \dots, k_0)\cdot W^{(j \bmod R_1) (N / R_1) k_{m - 1}} \\
+  \cdot W^{(j \bmod R_2) (N / R_2) k_{m - 2}} \dotsm W^{j k_0}.
+\end{multline} Từ đó, ta có thể định nghĩa các dãy phụ như sau: \begin{equation}
+  \begin{aligned}
+    A_1(j \bmod R_1, k_{m - 2}, \dots, k_0) &= \sum_{k_{m - 1}} A(k_{m - 1},
+    k_{m - 2}, \dots, k_0) \cdot W^{(j \bmod R_1) (N / R_1) k_{m - 1}}, \\
+    A_2(j \bmod R_2, k_{m - 3}, \dots, k_0) &= \sum_{k_{m - 2}} A_1(j \bmod
+    R_1, k_{m - 2}, \dots, k_0) \cdot W^{(j \bmod R_2) (N / R_2) k_{m - 2}}, \\
+    \dots &= \dots, \\
+    A_{m - 1}(j \bmod R_{m - 1}, k_0) &=  c \dot \sum_{k_1} A_{m - 2}(j \bmod
+    R_{m - 2}, k_1, k_0) W^{(j \bmod R_{m -1}) (N / R_{m - 1}) k_1}.
+  \end{aligned}
+\end{equation} Và kết quả được viết lại là \begin{equation}
+  X(j) = \sum_{k_0} A_{m - 1}(j \bmod R_{m - 1}, k_0) W^{j k_0}.
+\end{equation} Bằng lập luận tương tự, ta có số thao tác cần thực hiện trong
+thuật toán $m$ bước này là \begin{equation}
+  T = N(r_1 + r_2 + \dots + r_m).
+\end{equation}
+
+Nhận xét rằng, nếu $z = xy$ với $x, y > 1$ thì $x + y < z$ trừ trường hợp $x =
+y = 2$. Do đó, ta phân tích $N$ ra thành tích càng nhiều thừa số thì số thao
+tác càng giảm. Giả sử $N = r^ms^nt^p$, ta có \begin{align}
+  \frac{T}{N} &= m\cdot r + n \cdot s + p \cdot t + \dotsb, \\
+  \log_2(N) &= m\cdot \log_2(r) + n \cdot \log_2(s) + p \cdot \log_2(t),
+\end{align}kéo theo \begin{equation*}
+  \frac{T}{N \log_2(N)}
+\end{equation*} là trung bình có trọng số các đại lượng \begin{equation*}
+  \frac{r}{\log_2(r)}, \frac{s}{\log_2(s)}, \frac{t}{\log_2(t)}, \dotsc,
+\end{equation*} với các giá trị của các đại lượng này được khảo sát ở
+\tablename~\ref{tab:r-r_log2r}. Ta thấy rằng sử dụng thừa số $3$ là hiệu quả
+nhất, nhưng chỉ hơn khoảng 6\% so với sử dụng 2 và 4, hai số này có lợi ích
+từ biểu diễn nhị phân (xem thêm tại \cite{cooley1965algorithm}). Nói chung, ta
+nên chọn $N$ có tính ``hợp số cao'' (highly composite) với tỉ lệ thấp các thừa
+số lớn.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Giá trị khảo sát $r$ và $r / \log_2(r)$}
+  \label{tab:r-r_log2r}
+  \import{\tablespath}{r-r_log2r}
+\end{table}
