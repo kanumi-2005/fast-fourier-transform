@@ -13,20 +13,22 @@ gồm một phép nhân phức và một phép cộng phức liền sau đó.
 Thuật toán Cooley--Tukey được mô tả sau đây cho kết quả với ít hơn $2N\log_2N$
 thao tác và yêu cầu bộ nhớ không quá yêu cầu để lưu trữ mảng cho trước $A$. Để
 mô tả thuật toán, giả sử $N$ là hợp số, tức là $N = r_1r_2$. Ta chia các chỉ số
-trong \eqref{eq:fourier-series} ra như sau:\begin{equation}
-  k = r_2k_1 + k_0, \quad k_0 = 0, 1, \dots, r_2 - 1, \quad k_1 = 0, 1, \dots,
-  r_1 - 1.
-\end{equation} Khi đó, ta có thể viết lại thành \begin{equation}
+trong \eqref{eq:fourier-series} ra như sau:\begin{equation}\begin{aligned}
+  j &= r_1j_1 + j_0, & j_0 &= 0, 1, \dots, r_1 - 1, & j_1 &= 0, 1, \dots, r_2 -
+  1, \\
+  k &= r_2k_1 + k_0, & k_0 &= 0, 1, \dots, r_2 - 1, & k_1 &= 0, 1, \dots, r_1 -
+  1.
+\end{aligned}\end{equation} Khi đó, ta có thể viết lại thành \begin{equation}
   X(j) = \sum_{k_0} \sum_{k_1} A(k_1, k_0) \cdot W^{jk_1r_2} W^{jk_0}.
 \end{equation} Bởi vì \begin{equation}
-  W^{jk_1r_2} = W^{(j \bmod r_1)k_1r_2},
-\end{equation} nên tổng trong, lấy trên $k_1$, chỉ phụ thuộc vào $j \bmod r_1$
+  W^{jk_1r_2} = W^{j_0k_1r_2},
+\end{equation} nên tổng trong, lấy trên $k_1$, chỉ phụ thuộc vào $j_0$
 và $k_0$ và có thể được định nghĩa thành một mảng mới, \begin{equation}
   \label{eq:r1-fourier-series}
-  A_1(j \bmod r_1, k_0) = \sum_{k_1} A(k_1, k_0) \cdot W^{(j \bmod r_1)k_1r_2}.
+  A_1(j_0, k_0) = \sum_{k_1} A(k_1, k_0) \cdot W^{j_0k_1r_2}.
 \end{equation} Và kết quả có thể viết lại thành \begin{equation}
   \label{eq:r2-fourier-series}
-  X(j) = \sum_{k_0} A_1(j \bmod r_1, k_0) \cdot W^{jk_0}.
+  X(j) = \sum_{k_0} A_1(j_0, k_0) \cdot W^{jk_0}.
 \end{equation} Có $N$ phần tử trong mảng $A_1$, mỗi phần tử cần $r_1$ thao tác,
 dẫn đến cần $Nr_1$ thao tác để tính $A_1$. Tương tự, cần $Nr_2$ thao tác để
 tính $X$ từ $A_1$. Do đó, thuật toán hai bước này, dựa trên
@@ -35,32 +37,38 @@ tính $X$ từ $A_1$. Do đó, thuật toán hai bước này, dựa trên
   T = N(r_1 + r_2)
 \end{equation} thao tác. Ta có thể mở rộng thuật toán trên với $m$ bước như
 sau. Giả sử $N = r_1r_2 \dots r_m$. Đặt \begin{equation}
-  R_n = \prod_{k = 1}^n r_k, \quad i = 1, 2, \dots, m.
-\end{equation} Ta chia các chỉ số như sau: \begin{equation}
-  k = \frac{N}{R_1}k_{m - 1} + \frac{N}{R_2}k_{m - 2} + \dots +
-  \frac{N}{R_m}k_0, \quad k_i = 0, 1, \dots, r_{m - i} - 1, \quad \forall i =
+  R_n = \prod_{k = 1}^n r_k, \quad i = 1, 2, \dots, m,
+\end{equation} và $R_0 = 1$. Ta chia các chỉ số như sau:
+\begin{equation}\begin{aligned}
+  i &= R_{m - 1}j_{m - 1} + R_{M - 2}j_{m - 2} + \dots + R_0j_0, & j_i &= 0, 1,
+  \dots, r_{i + 1} - 1, & \forall i &= 0, 1, \dots, m - 1, \\
+  k &= \frac{N}{R_1}k_{m - 1} + \frac{N}{R_2}k_{m - 2} + \dots +
+  \frac{N}{R_m}k_0, & k_i &= 0, 1, \dots, r_{m - i} - 1, & \forall i &=
   0, 1, \dots, m - 1.
-\end{equation} Để ý rằng $R_m = N$, khi đó \eqref{eq:fourier-series} có thể
-viết lại thành \begin{multline}
+\end{aligned}\end{equation} Để ý rằng $R_m = N$, khi đó
+\eqref{eq:fourier-series} có thể viết lại thành \begin{multline}
   X(j) = \sum_{k_0}\sum_{k_1}\, \dots\, \sum_{k_{m - 1}}A(k_{m - 1}, k_{m - 2},
   \dots, k_0) \cdot W^{j (N / R_1) k_{m - 1}} W^{j (N / R_2)
   k_{m - 2}}\dotsm W^{j k_0}.
 \end{multline} hay \begin{multline}
   X(j) = \sum_{k_0}\sum_{k_1}\, \dots\, \sum_{k_{m - 1}}A(k_{m - 1}, k_{m - 2},
-  \dots, k_0)\cdot W^{(j \bmod R_1) (N / R_1) k_{m - 1}} \\
-  \cdot W^{(j \bmod R_2) (N / R_2) k_{m - 2}} \dotsm W^{j k_0}.
+  \dots, k_0)\cdot W^{j_0 (N / R_1) k_{m - 1}} \\
+  \cdot W^{(r_1j_1 + j_0) (N / R_2) k_{m - 2}} \dotsm W^{j k_0}.
 \end{multline} Từ đó, ta có thể định nghĩa các dãy phụ như sau: \begin{equation}
   \begin{aligned}
-    A_1(j \bmod R_1, k_{m - 2}, \dots, k_0) &= \sum_{k_{m - 1}} A(k_{m - 1},
-    k_{m - 2}, \dots, k_0) \cdot W^{(j \bmod R_1) (N / R_1) k_{m - 1}}, \\
-    A_2(j \bmod R_2, k_{m - 3}, \dots, k_0) &= \sum_{k_{m - 2}} A_1(j \bmod
-    R_1, k_{m - 2}, \dots, k_0) \cdot W^{(j \bmod R_2) (N / R_2) k_{m - 2}}, \\
+    A_1(j_0, k_{m - 2}, k_{m - 3}, \dots, k_0) &= \sum_{k_{m - 1}} A(k_{m - 1},
+    k_{m - 2}, \dots, k_0) \cdot W^{j_0 (N / R_1) k_{m - 1}}, \\
+    A_2(j_0, j_1, k_{m - 3}, k_{m - 4}, \dots, k_0) &= \sum_{k_{m - 2}}
+    A_1(j_0, k_{m - 2}, \dots, k_0) \cdot W^{(r_1j_1 + j_0) (N / R_2) k_{m -
+    2}}, \\
     \dots &= \dots, \\
-    A_{m - 1}(j \bmod R_{m - 1}, k_0) &=  c \dot \sum_{k_1} A_{m - 2}(j \bmod
-    R_{m - 2}, k_1, k_0) W^{(j \bmod R_{m -1}) (N / R_{m - 1}) k_1}.
+    A_{m - 1}(j_0, j_1, \dots, j_{m - 2}, k_0) &= \sum_{k_1} A_{m - 2}(j_0,
+    \dots, j_{m - 3}, k_1, k_0) \cdot W^{(r_{m - 2}j_{m - 2} + \dots + j_0) (N
+    / R_{m - 1}) k_1}.
   \end{aligned}
 \end{equation} Và kết quả được viết lại là \begin{equation}
-  X(j) = \sum_{k_0} A_{m - 1}(j \bmod R_{m - 1}, k_0) W^{j k_0}.
+  X(j_{m - 1}, j_{m - 2}, \dots, j_0) = \sum_{k_0} A_{m - 1}(j_0, \dots, j_{m -
+  2}, k_0) \cdot W^{j k_0}.
 \end{equation} Bằng lập luận tương tự, ta có số thao tác cần thực hiện trong
 thuật toán $m$ bước này là \begin{equation}
   T = N(r_1 + r_2 + \dots + r_m).
@@ -88,3 +96,143 @@ số lớn.
   \label{tab:r-r_log2r}
   \import{\tablespath}{r-r_log2r}
 \end{table}
+
+\subsection{Mã giả}
+
+Ta thấy rằng, mảng $A_i$ có thể được chia thành $N/r_i$ khối tính độc lập nhau.
+Do vậy ta chỉ cần mảng phụ có kích thước $\max_i{r_i}$ để tính và gán tại chỗ.
+Một vấn đề phát sinh khi tính tại chỗ, đó là, mảng kết quả được tính ra là
+\begin{equation}
+  A_m(j_0, j_1, \dots, j_{m - 1}) = X(j_{m - 1}, j_{m - 2}, \dots, j_0),
+\end{equation} có cách đánh chỉ số bị ngược. Để giải quyết vấn đề này, ta định
+nghĩa mảng $A'$ sao cho \begin{equation}
+  A'(R_{m - 1}k_0 + R_{m - 2}k_1 + \dots + k_{m - 1}) = A(k_{m - 1}, k_{m - 2},
+  \dots, k_0),
+\end{equation} với mọi chỉ số trên $A$. Ta có thể viết lại là \begin{equation}
+  A'(k_0, k_1, \dots, k_{m - 1}) = A(k_{m - 1}, k_{m - 2}, \dots, k_0).
+\end{equation} Làm tương tự với $A'_1$, $A'_2$, $\ldots\;$, $A'_m$. Sau khi
+thực hiện tính và gán tại chỗ, kết quả là \begin{equation}
+  A'_m(j_{m - 1}, j_{m - 2}, \dots, j_0) = X(j_{m - 1}, j_{m -2}, \dots, j_0).
+\end{equation} Từ đó, ta có thuật toán Cooley--Tukey, được trình bày tại
+\algorithmname~\ref{alg:cooley-tukey}. Trong đó, thuật toán Digit-Reversal
+được trình bày tại \algorithmname~\ref{alg:digit-reversal}.
+
+\begin{algorithm}[htbp]
+  \caption{Cooley--Tukey}
+  \label{alg:cooley-tukey}
+  \SetKwFunction{CooleyTukey}{Cooley-Tukey}
+  \SetKwFunction{DigitReversal}{Digit-Reversal}
+  \SetKwArray{A}{A}
+  \SetKwArray{r}{r}
+  \SetKwArray{R}{R}
+  \SetKwArray{W}{W}
+  \SetKwArray{B}{B}
+  \Fn{\CooleyTukey{\A{$0\dots N-1$}, \r{$1\dots m$}, \W{$0\dots N-1$}}}{
+    \KwIn{\A là mảng đầu vào, \r là mảng phân tích các thừa số của $N$, \W là
+    mảng các căn bậc $N$ của 1}
+    \KwOut{\A là mảng kết quả sau biến đổi (ghi đè tại chỗ)}
+    \BlankLine
+
+    \tcp{Khai báo mảng phụ \B cỡ lớn nhất của cơ số $r$ để lưu kết quả đầu ra
+    của một khối tính độc lập}
+    Declare \B{$0 \dots \max(r)-1$}\;
+    \BlankLine
+
+    \tcp{Đảo ngược mảng \A theo hệ cơ số hỗn hợp}
+    $\DigitReversal{\A, \R}$\;
+    \BlankLine
+
+    \tcp{Khởi tạo mảng \R: \R{$i$} lưu trữ tích các cơ số}
+    $\R{$0$} \gets 1$\;
+    \For{$i \gets 1$ \KwTo $m$}{
+      $\R{$i$} \gets \R{$i - 1$} \cdot \r{$i$}$\;
+    }
+    \BlankLine
+
+    \tcp{Tính lần lượt các giá trị $A_i$}
+    \For{$i$ \KwFrom $1$ \KwTo $m$}{
+      $r_{cur} \gets \r{$i$}$\;
+      $R_{prev} \gets \R{$i-1$}$\;
+      $R_{cur} \gets \R{$i$}$\;
+      \BlankLine
+
+      \tcp{Duyệt qua từng khối kích thước $R_{cur}$ trên toàn mảng}
+      \For{$j_{high}$ \KwFrom $0$ \KwTo $N - 1$ \KwStep $R_{cur}$}{
+
+        \tcp{Duyệt qua các khối tính độc lập}
+        \For{$j_{low}$ \KwFrom $0$ \KwTo $R_{prev} - 1$}{
+
+          \tcp{Tính đầu ra của một khối tính độc lập}
+          \For{$j_{out}$ \KwFrom $ 0$ \KwTo $r_{cur} - 1$}{
+            $\B{$j_{out}$} \gets 0$\;
+            \For{$k$ \KwFrom $0$ \KwTo $r_{cur} - 1$}{
+              \tcp{Xác định chỉ số đầu vào}
+              $idx \gets j_{high} + j_{low} + k \cdot R_{prev}$\;
+
+              \tcp{Tính số mũ của hệ số xoay}
+              $p \gets ((R_{prev} \cdot j_{out} + j_{low}) \cdot (N / R_{cur})
+              \cdot k) \bmod N$\;
+
+              \tcp{Nhân hệ số xoay và cộng dồn}
+              $\B{$j_{out}$} \gets \B{$j_{out}$} + \A{$idx$} \cdot \W{$p$}$\;
+            }
+          }
+
+          \tcp{Ghi kết quả từ mảng tạm \B trả lại mảng \A}
+          \For{$j_{out}$ \KwFrom $0$ \KwTo $r_{cur} - 1$}{
+            $idx \gets j_{high} + j_{low} + j_{out} \cdot R_{prev}$\;
+            $\A{$idx$} \gets \B{$j_{out}$}$\;
+          }
+
+        }
+      }
+    }
+    \Return{\A}
+  }
+\end{algorithm}
+
+\begin{algorithm}[htbp]
+  \caption{Digit-Reversal}
+  \label{alg:digit-reversal}
+  \SetKwFunction{DigitReversal}{Digit-Reversal}
+  \SetKwArray{A}{A}
+  \SetKwArray{R}{R}
+  \Fn{\DigitReversal{\A{$0\dots N-1$}, \R{$0\dots m$}}}{
+    \KwIn{\A là mảng đầu vào, \R là mảng trọng số}
+    \BlankLine
+    $j \gets 0$ \tcp*{Biến $j$ lưu vị trí đảo ngược của $i$}
+    \BlankLine
+
+    \For{$i$ \KwFrom $0$ \KwTo $N - 1$}{
+
+      \tcp{Chỉ hoán đổi một chiều để không bị đổi ngược lại vị trí cũ}
+      \If{$i < j$}{
+        $\A{$i$}\leftrightarrow \A{$j$}$\;
+      }
+      \BlankLine
+
+      \tcp{Cập nhật $j$ bằng cơ chế cộng có nhớ ngược}
+      \tcp{Bắt đầu từ $k = m$ (tương ứng với hàng số lớn nhất)}
+      $k \gets m$\;
+      \While{$k \ge 1$}{
+        $W \gets \R{$k-1$}$ \tcp*{Trọng số hiện tại}
+        $r \gets \R{$k$} / W$ \tcp*{Cơ số của hàng này}
+
+        \tcp{Kiểm tra xem khi cộng thêm có bị tràn số không}
+        \uIf{$j + W \ge \R{$k$}$}{
+          \tcp{Nếu tràn số: giảm chữ số này về 0 bằng cách trừ đi phần đã tích
+          lũy}
+          $j \gets j - (r - 1) \cdot W$\;
+
+          \tcp{Dịch sang hàng nhỏ hơn kế tiếp để cộng phần nhớ}
+          $k \gets k - 1$\;
+        }
+        \Else{
+          \tcp{Nếu chưa tràn số: chỉ cần cộng thêm trọng số $W$}
+          $j \gets j + W$\;
+          \KwBreak\tcp*{Thoát vòng lặp, chờ vòng lặp tiếp theo của $i$}
+        }
+      }
+    }
+  }
+\end{algorithm}

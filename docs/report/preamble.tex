@@ -33,10 +33,15 @@
 % \usepackage{indentfirst}
 
 
-% \usepackage[ruled,vlined]{algorithm2e}
-% \usepackage{algorithm}
-% \usepackage{algorithmic}
-% \SetAlgorithmName{Thuật toán}{Thuật toán}{Danh sách thuật toán}
+\usepackage[ruled,vlined]{algorithm2e}
+\newcommand{\algorithmname}{Thuật toán}
+\SetAlgorithmName{\algorithmname}{\algorithmname}{Danh sách thuật toán}
+\SetKwProg{Fn}{function}{}{end}
+\SetKw{KwStep}{step}
+\SetKw{KwFrom}{from}
+\SetKw{KwDownTo}{down~to}
+\SetKw{KwBreak}{break}
+\DontPrintSemicolon
 
 \usepackage{amsthm}
 \renewcommand{\proofname}{Chứng minh}
@@ -67,3 +72,5 @@
 \newcommand{\imagespath}{\figurespath}
 \graphicspath{{\figurespath}}
 \newcommand{\tablespath}{\resourcespath/tables}
+
+\newcommand{\bdiv}{\mathbin{\text{div}}}
