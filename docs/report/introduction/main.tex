@@ -1,0 +1,118 @@
+\section{Giới thiệu}
+
+Trong nhiều lĩnh vực khoa học và kỹ thuật hiện nay, dữ liệu thường xuất hiện
+dưới dạng tín hiệu như âm thanh, hình ảnh, sóng điện từ hoặc dữ liệu cảm biến.
+Một tín hiệu có thể thay đổi theo thời gian và chứa nhiều thông tin khác nhau.
+Để hiểu và phân tích tín hiệu, người ta cần xác định những thành phần tạo nên
+tín hiệu đó, đặc biệt là các thành phần tần số.
+
+\subsection{Biến đổi Fourier}
+
+Biến đổi Fourier (FT) là một trong những công cụ toán học quan trọng dùng để
+phân tích tín hiệu. FT là phương pháp chuyển đổi tín hiệu từ miền thời gian
+sang miền tần số.
+
+\begin{itemize}
+    \item Miền thời gian (Time Domain): biểu diễn tín hiệu theo sự thay đổi
+    của nó theo thời gian.
+    \item Miền tần số (Frequency Domain): biểu diễn tín hiệu theo các thành
+    phần tần số tạo nên tín hiệu đó.
+\end{itemize}
+
+Ví dụ, một bài hát có thể được xem là sự kết hợp của nhiều âm thanh với các
+tần số khác nhau. FT giúp tách các thành phần này để phân tích riêng biệt.
+
+Đối với tín hiệu liên tục $x(t)$, FT được định nghĩa bởi công thức:
+\begin{equation}
+  X(f) = \int_{-\infty}^{\infty} x(t)e^{-i2\pi ft}\,dt,
+\end{equation}
+trong đó:
+\begin{itemize}
+    \item $x(t)$: tín hiệu trong miền thời gian.
+    \item $X(f)$: tín hiệu sau khi chuyển sang miền tần số.
+    \item $f$: tần số.
+    \item $e^{-i2\pi ft}$: hàm mũ phức dùng để biểu diễn sóng điều hòa.
+    \item $i$: đơn vị ảo với $i^2 = -1$.
+\end{itemize}
+Công thức trên cho phép phân tích tín hiệu thành tổng hợp của nhiều sóng sin
+và cos với các tần số khác nhau.
+
+\subsection{Biến đổi Fourier rời rạc}
+
+Trong thực tế, máy tính và các thiết bị số không xử lý tín hiệu liên tục mà xử
+lý dữ liệu rời rạc dưới dạng các mẫu (samples). Vì vậy, người ta sử dụng biến
+đổi Fourier rời rạc (DFT).
+
+DFT chuyển đổi một dãy dữ liệu rời rạc từ miền thời gian sang miền tần số. Nếu
+tín hiệu có $N$ mẫu dữ liệu:
+
+\begin{equation}
+  X(k)=\sum_{n=0}^{N-1}x(n)e^{-i\frac{2\pi}{N}kn},
+  \quad k=0,1,\ldots,N-1,
+\end{equation}
+trong đó:
+\begin{itemize}
+    \item $x(n)$: giá trị tín hiệu tại mẫu thứ $n$.
+    \item $X(k)$: thành phần tần số thứ $k$.
+    \item $N$: tổng số mẫu dữ liệu.
+    \item $e^{-i\frac{2\pi}{N}kn}$: hệ số quay phức dùng để phân tích tần số.
+\end{itemize}
+
+DFT cho phép xác định các tần số xuất hiện trong tín hiệu và cường độ của từng
+tần số. Đây là nền tảng quan trọng trong xử lý tín hiệu số, xử lý âm thanh và
+xử lý ảnh.
+
+Tuy nhiên, việc tính DFT trực tiếp cần rất nhiều phép tính. Nếu tín hiệu có
+$N$ mẫu thì cần khoảng $N^2$ phép toán. Khi số lượng dữ liệu lớn, thời gian xử
+lý sẽ tăng rất nhanh.
+
+\subsection{Biến đổi Fourier nhanh}
+
+Để giải quyết vấn đề tốc độ tính toán của DFT, thuật toán biến đổi Fourier
+nhanh (FFT) được phát triển. FFT là thuật toán dùng để tính DFT nhanh hơn bằng
+cách chia bài toán lớn thành nhiều bài toán nhỏ hơn. Nhờ đó, số lượng phép tính
+được giảm đáng kể và tốc độ xử lý được cải thiện rõ rệt.
+
+FFT không làm thay đổi kết quả của DFT mà chỉ tối ưu cách tính toán. Thay vì
+thực hiện toàn bộ phép tính trực tiếp, FFT tận dụng các tính chất đối xứng và
+tuần hoàn của FT để giảm số phép toán cần thiết. Độ phức tạp tính toán của DFT
+trực tiếp là $O(N^2)$, trong khi FFT giảm xuống còn $O(N\log N)$.
+
+Nhờ khả năng xử lý nhanh và hiệu quả, FFT trở thành một trong những thuật toán
+quan trọng nhất trong khoa học máy tính và xử lý tín hiệu số. FFT hiện được
+ứng dụng rộng rãi trong xử lý âm thanh, xử lý ảnh, truyền thông số, y học,
+ra-đa và nhiều lĩnh vực kỹ thuật khác.
+
+\subsection{Lịch sử phát triển}
+
+Ý tưởng nền tảng của thuật toán FFT đã xuất hiện từ rất sớm trong lịch sử toán
+học. Năm 1805, nhà toán học người Đức C. F. Gauss đã sử dụng một phương pháp
+tương tự FFT để phục vụ việc tính toán quỹ đạo của các tiểu hành tinh Pallas
+và Juno. Tuy nhiên, công trình này không được công bố rộng rãi vào thời điểm
+đó nên chưa tạo được ảnh hưởng đáng kể đối với cộng đồng khoa học
+\cite{heideman1984gauss}.
+
+Trong giai đoạn tiếp theo, nhiều nhà khoa học tiếp tục nghiên cứu các phương
+pháp cải tiến tính DFT nhằm giảm số lượng phép tính cần thực hiện. Đến năm
+1942, G. C. Danielson và C. Lanczos đã đề xuất phương pháp phân rã phép DFT
+trong nghiên cứu tinh thể học tia X. Công trình này đặt nền móng quan trọng
+cho sự phát triển của thuật toán FFT hiện đại \cite{danielson1942}.
+
+Bước ngoặt quan trọng nhất diễn ra vào năm 1965 khi J. W. Cooley và
+J. W. Tukey công bố thuật toán FFT hiện đại \cite{cooley1965algorithm}. Hai
+nhà khoa học đã chứng minh rằng DFT có thể được chia thành nhiều bài toán nhỏ
+hơn, từ đó giảm đáng kể số lượng phép tính cần thực hiện. Thuật toán này giúp
+giảm độ phức tạp tính toán từ $O(N^2)$ xuống còn $O(N \log N)$, làm tăng đáng
+kể tốc độ xử lý dữ liệu.
+
+Sự ra đời của FFT đã tạo nên bước tiến lớn trong khoa học máy tính và xử lý
+tín hiệu số. Nhờ khả năng tính toán nhanh và hiệu quả, FFT nhanh chóng được
+ứng dụng rộng rãi trong nhiều lĩnh vực như xử lý âm thanh, xử lý ảnh, truyền
+thông số, ra-đa, y học và các ngành khoa học kỹ thuật khác.
+
+Ngày nay, FFT được xem là một trong những thuật toán quan trọng nhất của thế
+kỷ XX. Nhà toán học Gilbert Strang từng nhận định FFT là “thuật toán số quan
+trọng nhất của thời đại chúng ta” \cite{strang1993wavelet}. Đồng thời, FFT
+cũng được xếp vào danh sách 10 thuật toán hàng đầu trong số đặc biệt của tạp
+chí \textit{IEEE Computing in Science \& Engineering}
+\cite{10.1109/MCISE.2000.814652}.
