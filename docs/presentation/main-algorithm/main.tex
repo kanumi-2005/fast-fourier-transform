@@ -1,0 +1,237 @@
+\section{Thuật toán Cooley--Tukey}
+
+\begin{frame}
+  \frametitle{Bài toán}
+
+  \begin{block}{Bài toán}
+    Cho mảng đầu vào $A(i)$ với $i = 0$, $2$, $\ldots\,$, $N - 1$ là các số
+    thực và $W$ là một căn bậc $N$ của $1$. Tính chuỗi
+    Fourier phức: \begin{equation}
+      X(j) = \sum_{k = 0}^{N - 1} A(k)W^{kj}, \quad j = 0, 1, \dots, N - 1,
+    \end{equation}
+  \end{block}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Ý tưởng ngây thơ}
+
+  Nếu tính theo đúng công thức ban đầu của bài toán chi phí tính toán rất lớn.
+  \onslide<+->
+  \begin{itemize}[<+->]
+    \item Một \alert<.>{thao tác} bao gồm: \begin{itemize}[<+->]
+      \item \alert<.>{Một phép nhân} hai số phức;
+      \item \alert<.>{Một phép cộng} sau đó.
+      \end{itemize}
+    \item Độ phức tạp là $N^2$ \alert<.>{thao tác}: \begin{itemize}[<+->]
+      \item $N$ thao tác để tính mỗi $X(j)$;
+      \item $N \cdot N = N^2$ thao tác để tính mảng $X$ gồm $N$ phần tử.
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Ý tưởng}
+
+  Dựa vào tính \alert<.>{tuần hoàn} của hệ số xoay (twiddle factor):
+  \begin{equation*}
+    W^{i} = W^{i \bmod N},
+  \end{equation*} ta không cần phải tính nhiều lần với các giá trị $i_1$ và
+  $i_2$ thỏa $i_1 \equiv i_2 \pmod{N}$.
+\end{frame}
+
+\begin{frame}
+  \frametitle{Ví dụ minh họa trường hợp 2 thừa số}
+  \framesubtitle{Biến đổi toán học}
+
+  Xét trường hợp $N = 6 = 2 \cdot 3$. Khi đó hệ số $X(j)$ có
+  thể viết lại thành: \begin{align*}
+    \uncover<+->{
+      X(j) &= \begin{aligned}[t]
+        & A(0)W^0 + A(1)W^{j} + A(2)W^{2j} + A(3)W^{3j} + A(4)W^{4j} \\
+        &\qquad + A(5)W^{5j},
+      \end{aligned} \\
+    }
+    \uncover<+->{
+      &= \begin{aligned}[t]
+        &\bigl( A(0)W^0 + A(3)W^{3j} \bigr) + \bigl( A(1)W^{j} + A(4)W^{4j}
+        \bigr) \\
+        &\qquad + \bigl(A(2)W^{2j} + A(5)W^{5j} \bigr),
+      \end{aligned} \\
+    }
+    \uncover<+->{
+      &= \begin{aligned}[t]
+        & W^0 \bigl( A(0) + A(3)W^{3j} \bigr ) + W^{j} \bigl( A(1) +
+        A(4)W^{3j} \bigr ) \\
+        & \qquad W^{2j} \bigl( A(2) + A(5)W^{3j} \bigr ).
+      \end{aligned}
+    }
+  \end{align*}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Ví dụ minh họa trường hợp 2 thừa số}
+  \framesubtitle{Giảm chi phí tính toán}
+
+  \begin{rem}<.->
+    \begin{itemize}[<+->]
+      \item Giá trị trung gian $A(0) + A(3)W^{3j}$ chỉ nhận hai giá trị khác
+        nhau là $A(0) + A(3)$ và $A(0) + A(3)W^{3}$ với các giá trị $j = 0$,
+        $1$, $\ldots\,$, $5$.
+      \item Tương tự với $A(1) + A(4)W^{3j}$ và $A(2) + A(5)W^{3j}$.
+      \item Vậy tổng cộng có $2 \cdot 3 = 6 = N$ giá trị khác nhau.
+    \end{itemize}
+  \end{rem}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Ví dụ minh họa trường hợp 2 thừa số}
+  \framesubtitle{Chi phí tính toán}
+
+  Lúc này, chi phí tính toán là $N(2 + 3)$ thao tác:
+  \onslide<+->
+  \begin{itemize}[<+->]
+    \item $2$ thao tác để tính mỗi giá trị trung gian của $A(0) + A(3)W^{3j}$,
+      $A(1) + A(4)W^{3j}$ và $A(2) + A(5)W^{3j}$.
+    \item $2N$ thao tác để tính $N$ giá trị trung gian khác nhau.
+    \item $3$ thao tác để tính mỗi giá trị $X(j)$ từ các giá trị này.
+    \item $3N$ thao tác để tính toàn mảng.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Trường hợp hai thừa số bất kì}
+  \framesubtitle{Chi phí tính toán}
+
+  Nếu $N = r_1 \cdot r_2$. Khi đó $X(j)$ có thể viết lại thành:
+  \begin{align*}
+    \uncover<+->{
+      X(j) &= \sum_{k = 0}^{N - 1}A(k)W^{jk}, \\
+    }
+    \uncover<+->{
+      &= \sum_{k_0 = 0}^{r_2 - 1}W^{jk_0}\sum_{k_1 = 0}^{r_1 -
+      1}A(r_2k_1 + k_0)W^{jk_1r_2}.
+    }
+  \end{align*}
+
+  \begin{itemize}[<+->]
+    \item Mỗi tổng trong, theo $k_1$, chỉ có tối đa $r_1$ giá trị khác nhau
+      (vì khi tăng/giảm $j$ đi $r_1$ số mũ tăng giảm theo một bội của
+      $r1\cdot r_2 = N$).
+    \item Lập luận tương tự, chi phí tính toán lúc này sẽ là $N(r_1 + r_2)$
+      thao tác.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Ví dụ minh hoạ trường hợp đa thừa số}
+  \framesubtitle{Biến đổi toán học}
+
+  Xét trường hợp $N = 12 = 2 \cdot 2 \cdot 3$. Sau khi tách các giá trị $X(j)$
+  thành 3 phần thì một trong 3 dạng giá trị trung gian là: \begin{equation*}
+    A(0) + A(3)W^{3j} + A(6)W^{6j} + A(9)W^{9j}, j = 0, 1, \dots, 3
+  \end{equation*} \pause Ta có thể xem đây như một bài toán con với kích thước
+  $N' = 4 = 2 \cdot 2$ và $W' = W^3$. Khi đó ta có thể tách thành
+  \begin{equation*}
+    \bigl(  A(0) + A(6)W^{6j} \bigr ) + W^{3j}\bigl( A(3) + A(9)W^{6j} \bigr ).
+  \end{equation*}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Ví dụ minh hoạ trường hợp đa thừa số}
+  \framesubtitle{Chi phí tính toán giá trị trung gian}
+
+  Lúc này, giá trị trung gian (cấp 1) có thể được tính qua giá trị trung gian
+  cấp với tổng chi phí là \alert<.>{$12(2 + 2)$ thao tác}:
+  \onslide<+->
+  \begin{itemize}[<+->]
+    \item Cần $2$ thao tác để một giá trị trung gian cấp 2.
+    \item Có 3 dạng giá trị trung gian. Mỗi dạng giá trị trung gian cấp 1 có
+      $4$ giá trị trung gian cấp 2 khác nhau. Tổng cộng có $3 \cdot 2 \cdot 2 =
+      12$ giá trị trung gian cấp 2 khác nhau. Vậy nên cần \alert<.>{$12 \cdot
+      2$} thao tác để tính tất cả các giá trị trung gian cấp 2.
+    \item $2$ thao tác để tính một giá trị trung gian cấp 1 từ các giá trị
+      trung gian cấp $2$.
+    \item $12\cdot 2$ thao tác để tính tất $12$ giá trị trung gian cấp 1.
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Trường hợp tổng quát}
+  \framesubtitle{Biễu diễn hình thức}
+
+  Với $N = r1r2\dotsm r_m$. Đặt $R_i = r_1r_2\dotsm r_{i}$ với $i = 1$, $2$,
+  $\ldots\,$, $m$. Khi đó, ta có thể viết $X(j)$ thành
+  \begin{multline*}
+    X(j) = \sum_{k_0}^{r_{m - 1} - 1} W^{j k_0}
+    \sum_{k_1}^{r_{m - 2} - 1} W^{j (N / R_{m - 1}) k_{m
+    - 2}}\, \dots\, \\
+    \sum_{k_{m - 1}}^{r_1 - 1} W^{j (N / R_1) k_{m - 1}} A(k_{m - 1}R_{m - 1} +
+    k_{m - 2}R_{m - 2} + \dots + k_1R_1 + k_0).
+  \end{multline*}
+
+  \onslide<+(1)->
+  \begin{rem}<.->
+    \begin{itemize}[<+->]
+      \item Tổng theo $k_i$ tương ứng với giá trị trung gian cấp $i$.
+      \item Giá trị trung gian cấp $i$ có $N/R_{m - i}$ dạng (phụ thuộc $k_{i -
+        1}$, $k_{i - 2}$, $\ldots\,$, $k_0$), mỗi dạng có $R_{m - i}$ giá trị
+        khác nhau, chi phí tính từng giá trị là $r_i$.
+      \item Tổng chi phí tính các giá trị trung gian cấp $i$ là $Nr_i$ thao
+        tác.
+    \end{itemize}
+  \end{rem}
+
+\end{frame}
+
+\begin{frame}
+  \frametitle{Trường hợp tổng quát}
+  \framesubtitle{Chi phí tính toán}
+
+  Tổng chí phí toán với $m$ thừa số là: \begin{equation*}
+    T = N(r_1 + r_2 + \dots + r_m).
+  \end{equation*}
+
+  \onslide<+(1)->
+  \begin{rem}<.->
+    Nếu $N = r^ms^nt^p\dotsm$ thì
+    \begin{align*}
+      \frac{T}{N} &= (m \cdot r + n \cdot s + p \cdot t + \dotsb ), \\
+      \log_2(N) &= m \cdot \log_2(r) + n \cdot \log_2(s) + p \cdot \log_2(t) +
+      \dotsb.
+    \end{align*} \onslide<+(1)-> Khi đó, $T/\bigl( N\log_2(N)\bigr )$ là trung
+    bình có trọng số của các đại lượng \begin{equation*}
+      \frac{r}{\log_2(r)}, \frac{s}{\log_2(s)}, \frac{p}{\log_2(p)}, \dotsc
+    \end{equation*}
+  \end{rem}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Trường hợp tổng quát}
+  \framesubtitle{Khảo sát chi phí tính toán}
+
+  \begin{columns}
+    \begin{column}{0.7\textwidth}
+      \begin{itemize}[<+->]
+        \item Sử dụng thừa số $3$ là hiệu quả nhất, nhưng chỉ hơn khoảng 6\% so
+          với sử dụng 2 và 4.
+        \item Sử dụng các giá trị dưới $10$ thì chênh lệch số lượng tính toán
+          dưới 50\%.
+        \item Các số $2$ và $4$ có lợi ích từ biểu diễn nhị phân (xem thêm tại
+          \cite{cooley1965algorithm}).
+        \item Nên chọn $N$ có tính ``hợp số cao'' (highly composite) với tỉ lệ
+          thấp các thừa số lớn.
+      \end{itemize}
+
+    \end{column}
+
+    \begin{column}{0.35\textwidth}
+      \begin{table}
+        \centering
+        \caption{Giá trị khảo sát $r$ và $r / \log_2(r)$}
+        \import{\tablespath}{r-r_log2r}
+      \end{table}
+    \end{column}
+  \end{columns}
+\end{frame}

@@ -97,142 +97,142 @@ số lớn.
   \import{\tablespath}{r-r_log2r}
 \end{table}
 
-\subsection{Mã giả}
-
-Ta thấy rằng, mảng $A_i$ có thể được chia thành $N/r_i$ khối tính độc lập nhau.
-Do vậy ta chỉ cần mảng phụ có kích thước $\max_i{r_i}$ để tính và gán tại chỗ.
-Một vấn đề phát sinh khi tính tại chỗ, đó là, mảng kết quả được tính ra là
-\begin{equation}
-  A_m(j_0, j_1, \dots, j_{m - 1}) = X(j_{m - 1}, j_{m - 2}, \dots, j_0),
-\end{equation} có cách đánh chỉ số bị ngược. Để giải quyết vấn đề này, ta định
-nghĩa mảng $A'$ sao cho \begin{equation}
-  A'(R_{m - 1}k_0 + R_{m - 2}k_1 + \dots + k_{m - 1}) = A(k_{m - 1}, k_{m - 2},
-  \dots, k_0),
-\end{equation} với mọi chỉ số trên $A$. Ta có thể viết lại là \begin{equation}
-  A'(k_0, k_1, \dots, k_{m - 1}) = A(k_{m - 1}, k_{m - 2}, \dots, k_0).
-\end{equation} Làm tương tự với $A'_1$, $A'_2$, $\ldots\;$, $A'_m$. Sau khi
-thực hiện tính và gán tại chỗ, kết quả là \begin{equation}
-  A'_m(j_{m - 1}, j_{m - 2}, \dots, j_0) = X(j_{m - 1}, j_{m -2}, \dots, j_0).
-\end{equation} Từ đó, ta có thuật toán Cooley--Tukey, được trình bày tại
-\algorithmname~\ref{alg:cooley-tukey}. Trong đó, thuật toán Digit-Reversal
-được trình bày tại \algorithmname~\ref{alg:digit-reversal}.
-
-\begin{algorithm}[htbp]
-  \caption{Cooley--Tukey}
-  \label{alg:cooley-tukey}
-  \SetKwFunction{CooleyTukey}{Cooley-Tukey}
-  \SetKwFunction{DigitReversal}{Digit-Reversal}
-  \SetKwArray{A}{A}
-  \SetKwArray{r}{r}
-  \SetKwArray{R}{R}
-  \SetKwArray{W}{W}
-  \SetKwArray{B}{B}
-  \Fn{\CooleyTukey{\A{$0\dots N-1$}, \r{$1\dots m$}, \W{$0\dots N-1$}}}{
-    \KwIn{\A là mảng đầu vào, \r là mảng phân tích các thừa số của $N$, \W là
-    mảng các căn bậc $N$ của 1}
-    \KwOut{\A là mảng kết quả sau biến đổi (ghi đè tại chỗ)}
-    \BlankLine
-
-    \tcp{Khai báo mảng phụ \B cỡ lớn nhất của cơ số $r$ để lưu kết quả đầu ra
-    của một khối tính độc lập}
-    Declare \B{$0 \dots \max(r)-1$}\;
-    \BlankLine
-
-    \tcp{Đảo ngược mảng \A theo hệ cơ số hỗn hợp}
-    $\DigitReversal{\A, \R}$\;
-    \BlankLine
-
-    \tcp{Khởi tạo mảng \R: \R{$i$} lưu trữ tích các cơ số}
-    $\R{$0$} \gets 1$\;
-    \For{$i \gets 1$ \KwTo $m$}{
-      $\R{$i$} \gets \R{$i - 1$} \cdot \r{$i$}$\;
-    }
-    \BlankLine
-
-    \tcp{Tính lần lượt các giá trị $A_i$}
-    \For{$i$ \KwFrom $1$ \KwTo $m$}{
-      $r_{cur} \gets \r{$i$}$\;
-      $R_{prev} \gets \R{$i-1$}$\;
-      $R_{cur} \gets \R{$i$}$\;
-      \BlankLine
-
-      \tcp{Duyệt qua từng khối kích thước $R_{cur}$ trên toàn mảng}
-      \For{$j_{high}$ \KwFrom $0$ \KwTo $N - 1$ \KwStep $R_{cur}$}{
-
-        \tcp{Duyệt qua các khối tính độc lập}
-        \For{$j_{low}$ \KwFrom $0$ \KwTo $R_{prev} - 1$}{
-
-          \tcp{Tính đầu ra của một khối tính độc lập}
-          \For{$j_{out}$ \KwFrom $ 0$ \KwTo $r_{cur} - 1$}{
-            $\B{$j_{out}$} \gets 0$\;
-            \For{$k$ \KwFrom $0$ \KwTo $r_{cur} - 1$}{
-              \tcp{Xác định chỉ số đầu vào}
-              $idx \gets j_{high} + j_{low} + k \cdot R_{prev}$\;
-
-              \tcp{Tính số mũ của hệ số xoay}
-              $p \gets ((R_{prev} \cdot j_{out} + j_{low}) \cdot (N / R_{cur})
-              \cdot k) \bmod N$\;
-
-              \tcp{Nhân hệ số xoay và cộng dồn}
-              $\B{$j_{out}$} \gets \B{$j_{out}$} + \A{$idx$} \cdot \W{$p$}$\;
-            }
-          }
-
-          \tcp{Ghi kết quả từ mảng tạm \B trả lại mảng \A}
-          \For{$j_{out}$ \KwFrom $0$ \KwTo $r_{cur} - 1$}{
-            $idx \gets j_{high} + j_{low} + j_{out} \cdot R_{prev}$\;
-            $\A{$idx$} \gets \B{$j_{out}$}$\;
-          }
-
-        }
-      }
-    }
-    \Return{\A}
-  }
-\end{algorithm}
-
-\begin{algorithm}[htbp]
-  \caption{Digit-Reversal}
-  \label{alg:digit-reversal}
-  \SetKwFunction{DigitReversal}{Digit-Reversal}
-  \SetKwArray{A}{A}
-  \SetKwArray{R}{R}
-  \Fn{\DigitReversal{\A{$0\dots N-1$}, \R{$0\dots m$}}}{
-    \KwIn{\A là mảng đầu vào, \R là mảng trọng số}
-    \BlankLine
-    $j \gets 0$ \tcp*{Biến $j$ lưu vị trí đảo ngược của $i$}
-    \BlankLine
-
-    \For{$i$ \KwFrom $0$ \KwTo $N - 1$}{
-
-      \tcp{Chỉ hoán đổi một chiều để không bị đổi ngược lại vị trí cũ}
-      \If{$i < j$}{
-        $\A{$i$}\leftrightarrow \A{$j$}$\;
-      }
-      \BlankLine
-
-      \tcp{Cập nhật $j$ bằng cơ chế cộng có nhớ ngược}
-      \tcp{Bắt đầu từ $k = m$ (tương ứng với hàng số lớn nhất)}
-      $k \gets m$\;
-      \While{$k \ge 1$}{
-        $W \gets \R{$k-1$}$ \tcp*{Trọng số hiện tại}
-        $r \gets \R{$k$} / W$ \tcp*{Cơ số của hàng này}
-
-        \tcp{Kiểm tra xem khi cộng thêm có bị tràn số không}
-        \uIf{$j + W \ge \R{$k$}$}{
-          \tcp{Nếu tràn số: giảm chữ số này về 0 bằng cách trừ đi phần đã tích
-          lũy}
-          $j \gets j - (r - 1) \cdot W$\;
-
-          \tcp{Dịch sang hàng nhỏ hơn kế tiếp để cộng phần nhớ}
-          $k \gets k - 1$\;
-        }
-        \Else{
-          \tcp{Nếu chưa tràn số: chỉ cần cộng thêm trọng số $W$}
-          $j \gets j + W$\;
-          \KwBreak\tcp*{Thoát vòng lặp, chờ vòng lặp tiếp theo của $i$}
-        }
-      }
-    }
-  }
-\end{algorithm}
+% \subsection{Mã giả}
+%
+% Ta thấy rằng, mảng $A_i$ có thể được chia thành $N/r_i$ khối tính độc lập nhau.
+% Do vậy ta chỉ cần mảng phụ có kích thước $\max_i{r_i}$ để tính và gán tại chỗ.
+% Một vấn đề phát sinh khi tính tại chỗ, đó là, mảng kết quả được tính ra là
+% \begin{equation}
+%   A_m(j_0, j_1, \dots, j_{m - 1}) = X(j_{m - 1}, j_{m - 2}, \dots, j_0),
+% \end{equation} có cách đánh chỉ số bị ngược. Để giải quyết vấn đề này, ta định
+% nghĩa mảng $A'$ sao cho \begin{equation}
+%   A'(R_{m - 1}k_0 + R_{m - 2}k_1 + \dots + k_{m - 1}) = A(k_{m - 1}, k_{m - 2},
+%   \dots, k_0),
+% \end{equation} với mọi chỉ số trên $A$. Ta có thể viết lại là \begin{equation}
+%   A'(k_0, k_1, \dots, k_{m - 1}) = A(k_{m - 1}, k_{m - 2}, \dots, k_0).
+% \end{equation} Làm tương tự với $A'_1$, $A'_2$, $\ldots\;$, $A'_m$. Sau khi
+% thực hiện tính và gán tại chỗ, kết quả là \begin{equation}
+%   A'_m(j_{m - 1}, j_{m - 2}, \dots, j_0) = X(j_{m - 1}, j_{m -2}, \dots, j_0).
+% \end{equation} Từ đó, ta có thuật toán Cooley--Tukey, được trình bày tại
+% \algorithmname~\ref{alg:cooley-tukey}. Trong đó, thuật toán Digit-Reversal
+% được trình bày tại \algorithmname~\ref{alg:digit-reversal}.
+%
+% \begin{algorithm}[htbp]
+%   \caption{Cooley--Tukey}
+%   \label{alg:cooley-tukey}
+%   \SetKwFunction{CooleyTukey}{Cooley-Tukey}
+%   \SetKwFunction{DigitReversal}{Digit-Reversal}
+%   \SetKwArray{A}{A}
+%   \SetKwArray{r}{r}
+%   \SetKwArray{R}{R}
+%   \SetKwArray{W}{W}
+%   \SetKwArray{B}{B}
+%   \Fn{\CooleyTukey{\A{$0\dots N-1$}, \r{$1\dots m$}, \W{$0\dots N-1$}}}{
+%     \KwIn{\A là mảng đầu vào, \r là mảng phân tích các thừa số của $N$, \W là
+%     mảng các căn bậc $N$ của 1}
+%     \KwOut{\A là mảng kết quả sau biến đổi (ghi đè tại chỗ)}
+%     \BlankLine
+%
+%     \tcp{Khai báo mảng phụ \B cỡ lớn nhất của cơ số $r$ để lưu kết quả đầu ra
+%     của một khối tính độc lập}
+%     Declare \B{$0 \dots \max(r)-1$}\;
+%     \BlankLine
+%
+%     \tcp{Đảo ngược mảng \A theo hệ cơ số hỗn hợp}
+%     $\DigitReversal{\A, \R}$\;
+%     \BlankLine
+%
+%     \tcp{Khởi tạo mảng \R: \R{$i$} lưu trữ tích các cơ số}
+%     $\R{$0$} \gets 1$\;
+%     \For{$i \gets 1$ \KwTo $m$}{
+%       $\R{$i$} \gets \R{$i - 1$} \cdot \r{$i$}$\;
+%     }
+%     \BlankLine
+%
+%     \tcp{Tính lần lượt các giá trị $A_i$}
+%     \For{$i$ \KwFrom $1$ \KwTo $m$}{
+%       $r_{cur} \gets \r{$i$}$\;
+%       $R_{prev} \gets \R{$i-1$}$\;
+%       $R_{cur} \gets \R{$i$}$\;
+%       \BlankLine
+%
+%       \tcp{Duyệt qua từng khối kích thước $R_{cur}$ trên toàn mảng}
+%       \For{$j_{high}$ \KwFrom $0$ \KwTo $N - 1$ \KwStep $R_{cur}$}{
+%
+%         \tcp{Duyệt qua các khối tính độc lập}
+%         \For{$j_{low}$ \KwFrom $0$ \KwTo $R_{prev} - 1$}{
+%
+%           \tcp{Tính đầu ra của một khối tính độc lập}
+%           \For{$j_{out}$ \KwFrom $ 0$ \KwTo $r_{cur} - 1$}{
+%             $\B{$j_{out}$} \gets 0$\;
+%             \For{$k$ \KwFrom $0$ \KwTo $r_{cur} - 1$}{
+%               \tcp{Xác định chỉ số đầu vào}
+%               $idx \gets j_{high} + j_{low} + k \cdot R_{prev}$\;
+%
+%               \tcp{Tính số mũ của hệ số xoay}
+%               $p \gets ((R_{prev} \cdot j_{out} + j_{low}) \cdot (N / R_{cur})
+%               \cdot k) \bmod N$\;
+%
+%               \tcp{Nhân hệ số xoay và cộng dồn}
+%               $\B{$j_{out}$} \gets \B{$j_{out}$} + \A{$idx$} \cdot \W{$p$}$\;
+%             }
+%           }
+%
+%           \tcp{Ghi kết quả từ mảng tạm \B trả lại mảng \A}
+%           \For{$j_{out}$ \KwFrom $0$ \KwTo $r_{cur} - 1$}{
+%             $idx \gets j_{high} + j_{low} + j_{out} \cdot R_{prev}$\;
+%             $\A{$idx$} \gets \B{$j_{out}$}$\;
+%           }
+%
+%         }
+%       }
+%     }
+%     \Return{\A}
+%   }
+% \end{algorithm}
+%
+% \begin{algorithm}[htbp]
+%   \caption{Digit-Reversal}
+%   \label{alg:digit-reversal}
+%   \SetKwFunction{DigitReversal}{Digit-Reversal}
+%   \SetKwArray{A}{A}
+%   \SetKwArray{R}{R}
+%   \Fn{\DigitReversal{\A{$0\dots N-1$}, \R{$0\dots m$}}}{
+%     \KwIn{\A là mảng đầu vào, \R là mảng trọng số}
+%     \BlankLine
+%     $j \gets 0$ \tcp*{Biến $j$ lưu vị trí đảo ngược của $i$}
+%     \BlankLine
+%
+%     \For{$i$ \KwFrom $0$ \KwTo $N - 1$}{
+%
+%       \tcp{Chỉ hoán đổi một chiều để không bị đổi ngược lại vị trí cũ}
+%       \If{$i < j$}{
+%         $\A{$i$}\leftrightarrow \A{$j$}$\;
+%       }
+%       \BlankLine
+%
+%       \tcp{Cập nhật $j$ bằng cơ chế cộng có nhớ ngược}
+%       \tcp{Bắt đầu từ $k = m$ (tương ứng với hàng số lớn nhất)}
+%       $k \gets m$\;
+%       \While{$k \ge 1$}{
+%         $W \gets \R{$k-1$}$ \tcp*{Trọng số hiện tại}
+%         $r \gets \R{$k$} / W$ \tcp*{Cơ số của hàng này}
+%
+%         \tcp{Kiểm tra xem khi cộng thêm có bị tràn số không}
+%         \uIf{$j + W \ge \R{$k$}$}{
+%           \tcp{Nếu tràn số: giảm chữ số này về 0 bằng cách trừ đi phần đã tích
+%           lũy}
+%           $j \gets j - (r - 1) \cdot W$\;
+%
+%           \tcp{Dịch sang hàng nhỏ hơn kế tiếp để cộng phần nhớ}
+%           $k \gets k - 1$\;
+%         }
+%         \Else{
+%           \tcp{Nếu chưa tràn số: chỉ cần cộng thêm trọng số $W$}
+%           $j \gets j + W$\;
+%           \KwBreak\tcp*{Thoát vòng lặp, chờ vòng lặp tiếp theo của $i$}
+%         }
+%       }
+%     }
+%   }
+% \end{algorithm}
