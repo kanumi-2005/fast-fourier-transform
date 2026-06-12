@@ -1,0 +1,34 @@
+\section{Thực nghiệm và đánh giá}
+
+\subsection{Thiết lập thực nghiệm}
+
+Để đánh giá và so sánh hiệu năng giữa thuật toán biến đổi Fourier rời rạc trực tiếp (Brute-force DFT) và thuật toán Cooley--Tukey FFT, chúng tôi tiến hành thực nghiệm bằng cách đo thời gian thực thi của hai cài đặt trên cùng một bộ dữ liệu đầu vào.
+
+Thực nghiệm được thực hiện trong cùng một môi trường phần cứng và phần mềm nhằm đảm bảo tính công bằng và khả năng so sánh của kết quả. Cụ thể, chương trình được biên dịch và chạy trên máy tính có cấu hình gồm: bộ xử lý Intel Core i7-7700HQ @ 2.80GHz, RAM 8GB, hệ điều hành Windows 10 Pro 64-bit. Mã nguồn được viết bằng chuẩn C++17 và sử dụng các thư viện chuẩn \texttt{<complex>} để thao tác với số phức, \texttt{<chrono>} để đo thời gian thực thi, cùng \texttt{<iomanip>} để định dạng kết quả đầu ra.
+
+Dữ liệu đầu vào là các mảng số phức được sinh ngẫu nhiên, trong đó phần thực và phần ảo đều được lấy từ các giá trị nguyên trong khoảng từ 0 đến 99. Để quan sát rõ sự khác biệt về hiệu năng giữa hai thuật toán, kích thước mảng $N$ được lựa chọn theo các lũy thừa của 2, cụ thể $N \in \{256, 1024, 4096, 16384\}$. Việc sử dụng các giá trị này cũng phù hợp với điều kiện áp dụng của phiên bản Cooley--Tukey radix-2 trong cài đặt thực nghiệm.
+
+Thời gian thực thi của từng thuật toán được đo riêng biệt cho từng kích thước dữ liệu bằng \texttt{high\_resolution\_clock} và được quy đổi sang đơn vị micro-giây ($\mu s$).
+
+\subsection{Kết quả và nhận xét}
+
+Kết quả đo thời gian thực thi của hai thuật toán với từng giá trị $N$ được tổng hợp tại \tablename~\ref{tab:ket_qua_thuc_nghiem}.
+
+\begin{table}[htbp]
+  \centering
+  \caption{Bảng so sánh thời gian thực thi giữa Brute-force DFT và Cooley--Tukey FFT}
+  \label{tab:ket_qua_thuc_nghiem}
+  \input{resources/tables/experiment_result.tex}
+\end{table}
+
+Dựa trên các số liệu thu được từ \tablename~\ref{tab:ket_qua_thuc_nghiem}, có thể rút ra một số nhận xét sau:
+
+\begin{itemize}
+  \item Ngay ở kích thước dữ liệu nhỏ ($N = 256$), thuật toán Cooley--Tukey FFT đã cho thấy ưu thế rõ rệt khi chỉ mất 40 $\mu s$, trong khi Brute-force DFT mất 3315 $\mu s$. Điều này cho thấy FFT đã vượt trội ngay cả ở quy mô đầu vào tương đối nhỏ.
+
+  \item Khi kích thước mảng tăng lên, thời gian thực thi của Brute-force DFT tăng rất nhanh theo đúng đặc trưng của độ phức tạp $O(N^2)$. Chẳng hạn, khi $N$ tăng từ 1024 lên 4096, thời gian thực thi tăng từ 44792 $\mu s$ lên 673445 $\mu s$, tức tăng xấp xỉ 15 lần. Điều này phản ánh rõ chi phí tính toán lớn của phương pháp trực tiếp khi áp dụng cho các tín hiệu dài.
+
+  \item Ngược lại, thuật toán Cooley--Tukey FFT thể hiện hiệu năng vượt trội nhờ khai thác cấu trúc chia để trị, kết hợp với bước hoán vị đảo bit và tính toán tại chỗ (in-place). Với độ phức tạp $O(N \log_2 N)$, FFT duy trì tốc độ tăng chậm hơn nhiều so với Brute-force DFT. Tại $N = 16384$, thời gian thực thi của FFT chỉ là 1616 $\mu s$, trong khi Brute-force DFT mất 9312718 $\mu s$, tức FFT nhanh hơn hơn 5700 lần trong cài đặt thực nghiệm này.
+\end{itemize}
+
+Từ các kết quả trên có thể thấy rằng Cooley--Tukey FFT không chỉ có lợi thế về mặt lý thuyết mà còn thể hiện ưu thế rất rõ ràng trong thực nghiệm. Đây là lý do thuật toán này được sử dụng rộng rãi trong các hệ thống xử lý tín hiệu số hiện đại.
