@@ -1,222 +1,55 @@
-```latex
 \section{Ứng dụng FFT}
+
+\subsection{Phép tích chập và bản chất toán học}
+
+Phép tích chập (convolution) là một phép toán cốt lõi trong toán học ứng dụng và xử lý tín hiệu. Về bản chất, nó đo lường mức độ chồng lấp giữa hai hàm số khi một hàm được "lật ngược" (folding) và "dịch chuyển" (shifting) qua hàm kia. 
+
+Đối với hai dãy tín hiệu rời rạc $x[n]$ và $h[n]$, phép tích chập tuyến tính được định nghĩa bởi phương trình:
+
+\begin{equation}
+    (x * h)[n] = \sum_{m=-\infty}^{\infty} x[m] h[n - m].
+\end{equation}
+
+Trong thực tế tính toán với máy tính, ta làm việc với các dãy tuần hoàn hoặc có chiều dài hữu hạn $N$. Khi đó, ta sử dụng phép tích chập vòng (circular convolution):
+
+\begin{equation}
+    (x \circledast h)[n] = \sum_{m=0}^{N-1} x[m] h[(n - m) \bmod N].
+\end{equation}
+
+Tính toán trực tiếp biểu thức này đòi hỏi số lượng phép tính tỷ lệ với $O(N^2)$, một rào cản lớn khi $N$ trỏ nên khổng lồ. Tuy nhiên, \textbf{Định lý tích chập} đã tạo ra một bước ngoặt khi chứng minh rằng: Phép tích chập vòng trong miền thời gian/không gian hoàn toàn tương đương với phép nhân từng phần tử trong miền tần số. 
+
+\begin{equation}
+    \text{DFT}\{x \circledast h\} = \text{DFT}\{x\} \cdot \text{DFT}\{h\}.
+\end{equation}
+
+Để hiện thực hóa định lý này một cách tối ưu, ta sử dụng \textbf{Thuật toán Cooley--Tukey} để tính toán Biến đổi Fourier Rời rạc (DFT). Thuật toán Cooley-Tukey áp dụng chiến lược chia để trị (divide and conquer), chia một bài toán DFT kích thước $N$ (thường là lũy thừa của 2) thành các bài toán chẵn - lẻ có kích thước $N/2$. Nhờ khai thác tính chất đối xứng và tuần hoàn của các nghiệm phức của đơn vị $\omega_N = e^{-j2\pi/N}$, thuật toán này giảm đột phá độ phức tạp của bước chuyển miền từ $O(N^2)$ xuống chỉ còn $O(N \log N)$.
+
+Quy trình tính tích chập nhanh (Fast Convolution) thông qua FFT Cooley-Tukey diễn ra như sau:
+\begin{enumerate}
+    \item Đệm thêm các số 0 (zero-padding) cho hai dãy $x$ và $h$ để đạt chiều dài $N$ phù hợp (nếu cần tính tích chập tuyến tính).
+    \item Áp dụng FFT Cooley-Tukey để tính các phổ tần số $X = \text{FFT}(x)$ và $H = \text{FFT}(h)$ trong thời gian $O(N \log N)$.
+    \item Thực hiện nhân từng phần tử $Y[k] = X[k] \cdot H[k]$ trong thời gian $O(N)$.
+    \item Áp dụng FFT nghịch đảo (IFFT) dựa trên cùng lõi thuật toán Cooley-Tukey để đưa dãy $Y$ về lại miền ban đầu, thu được kết quả $(x * h)$ với tổng thời gian $O(N \log N)$.
+\end{enumerate}
+
+Tư duy chuyển từ phép tính chập không gian sang phép nhân tần số này chính là nền tảng cho hàng loạt các ứng dụng dưới đây.
+
 \subsection{Nhân đa thức}
 
-Một trong những ứng dụng quan trọng nhất của FFT là tăng tốc bài toán nhân đa thức. Cho hai đa thức $A(x)=\sum_{i=0}^{n-1}a_i x^i$ và $B(x)=\sum_{i=0}^{m-1}b_i x^i$. Ta cần tính đa thức tích
+Bài toán nhân đa thức về bản chất toán học chính là \textbf{phép tích chập tuyến tính} của hai dãy hệ số. 
 
-\begin{equation}
-C(x)=A(x)B(x).
-\end{equation}
+Cho hai đa thức $A(x) = \sum_{i=0}^{n-1} a_i x^i$ và $B(x) = \sum_{j=0}^{m-1} b_j x^j$. Hệ số $c_k$ của đa thức tích $C(x) = A(x)B(x)$ được tính bằng công thức $c_k = \sum a_i b_{k-i}$. Đây chính xác là định nghĩa của phép tích chập $(a * b)$.
 
-Theo phương pháp truyền thống, mỗi hệ số của đa thức thứ nhất phải được nhân với tất cả các hệ số của đa thức thứ hai. Hệ số thứ $k$ của đa thức kết quả được xác định bởi $c_k=\sum_{i=0}^{k}a_i b_{k-i}$. Nếu hai đa thức đều có khoảng $N$ hệ số thì số phép tính cần thực hiện xấp xỉ $N^2$, do đó độ phức tạp thời gian là $O(N^2)$.
+Thay vì nhân phân phối từng hệ số với độ phức tạp $O(N^2)$, ta xem dãy hệ số của hai đa thức như hai tín hiệu. Ta đệm số 0 cho cả hai dãy đạt chiều dài $N \ge n+m-1$ (với $N$ là lũy thừa của 2), sau đó dùng thuật toán FFT Cooley-Tukey chuyển chúng sang miền tần số (tương đương với việc tính giá trị của đa thức tại $N$ nghiệm phức). Tiếp theo, ta nhân các giá trị này lại với nhau và dùng IFFT để nội suy ngược ra dãy hệ số $c_k$. Ứng dụng tích chập này giúp bài toán nhân đa thức lớn (dùng trong mật mã học RSA, tính toán số nguyên lớn) đạt tốc độ vượt trội $O(N \log N)$.
 
-Để giảm chi phí tính toán, FFT chuyển đa thức từ miền hệ số sang miền giá trị. Ý tưởng xuất phát từ nhận xét rằng nếu $C(x)=A(x)B(x)$ thì tại mọi điểm $t$ luôn có $C(t)=A(t)B(t)$. Nhờ đó, thay vì nhân trực tiếp các hệ số, ta chỉ cần tính giá trị của hai đa thức tại cùng một tập điểm, thực hiện phép nhân từng giá trị tương ứng rồi khôi phục lại đa thức kết quả.
-
-FFT là thuật toán tính nhanh Biến đổi Fourier rời rạc (Discrete Fourier Transform -- DFT). Với dãy hệ số $(a_0,a_1,\ldots,a_{N-1})$, DFT được định nghĩa bởi
-
-\begin{equation}
-A_k=\sum_{j=0}^{N-1}a_j\omega_N^{jk},
-\qquad k=0,1,\ldots,N-1,
-\end{equation}
-
-trong đó $\omega_N=e^{-2\pi i/N}$ là nghiệm bậc $N$ nguyên thủy của đơn vị. Nếu tính trực tiếp công thức trên thì cần $O(N^2)$ phép toán, trong khi FFT giảm xuống còn $O(N\log N)$.
-
-Trong bài toán nhân đa thức, FFT sử dụng các điểm đặc biệt $1,\omega_N,\omega_N^2,\ldots,\omega_N^{N-1}$. Trước tiên, áp dụng FFT để tính các giá trị $A(\omega_N^k)$ và $B(\omega_N^k)$. Sau đó thực hiện phép nhân từng phần tử
-
-$$
-C(\omega_N^k)=A(\omega_N^k)B(\omega_N^k),
-\qquad k=0,1,\ldots,N-1.
-$$
-
-Kết quả thu được chính là biểu diễn của đa thức tích trong miền giá trị.
-
-Bước cuối cùng là sử dụng FFT nghịch đảo (Inverse Fast Fourier Transform -- IFFT) để chuyển kết quả từ miền giá trị trở lại miền hệ số. Sau khi thực hiện FFT và nhân từng điểm tương ứng, ta thu được các giá trị của đa thức tích tại các nghiệm bậc $N$ của đơn vị, tức là
-
-$$
-C(\omega_N^0),\,
-C(\omega_N^1),\,
-\ldots,\,
-C(\omega_N^{N-1}).
-$$
-
-Tuy nhiên, mục tiêu cuối cùng của bài toán là tìm các hệ số của đa thức
-
-$$
-C(x)=c_0+c_1x+\cdots+c_{N-1}x^{N-1}.
-$$
-
-IFFT chính là phép biến đổi ngược của FFT, cho phép khôi phục các hệ số $c_0,c_1,\ldots,c_{N-1}$ từ các giá trị $C(\omega_N^k)$. Nói cách khác, nếu FFT chuyển đa thức từ miền hệ số sang miền giá trị thì IFFT thực hiện quá trình ngược lại, chuyển từ miền giá trị về miền hệ số.
-
-Về mặt toán học, IFFT được định nghĩa bởi
-
-$$
-c_j=
-\frac{1}{N}
-\sum_{k=0}^{N-1}
-C(\omega_N^k)\omega_N^{-jk},
-\qquad
-j=0,1,\ldots,N-1.
-$$
-
-Thuật toán IFFT có cấu trúc gần giống FFT và cũng khai thác tính đối xứng của các nghiệm bậc $N$ của đơn vị. Vì vậy, độ phức tạp của IFFT là $O(N\log N)$ thay vì $O(N^2)$ như cách tính trực tiếp.
-Do đó, toàn bộ quá trình nhân đa thức gồm hai lần FFT, một lần IFFT và $N$ phép nhân từng phần tử. Tổng độ phức tạp là
-
-$$
-T=O(N\log N)+O(N\log N)+O(N)+O(N\log N)
-=O(N\log N).
-$$
-
-So với phương pháp truyền thống $O(N^2)$, FFT mang lại sự cải thiện rất lớn khi số lượng hệ số của đa thức tăng lên. Chính vì vậy, kỹ thuật nhân đa thức bằng FFT được sử dụng rộng rãi trong các hệ mật mã hiện đại, thư viện tính toán số lớn, phần mềm đại số máy tính và nhiều bài toán khoa học kỹ thuật khác.
 \subsection{Xử lý ảnh}
 
-FFT là một công cụ quan trọng trong lĩnh vực xử lý ảnh số. Một ảnh xám có thể được xem như một ma trận hai chiều, trong đó mỗi phần tử biểu diễn cường độ sáng của một điểm ảnh (pixel). Khi đó, FFT hai chiều (2D FFT) được sử dụng để chuyển ảnh từ miền không gian sang miền tần số.
-Giả sử ảnh đầu vào có kích thước $M \times N$ và được biểu diễn bởi hàm
-\begin{equation}
-    f(x,y),
-\end{equation}
-trong đó $x$ và $y$ là tọa độ của điểm ảnh.
-Biến đổi Fourier rời rạc hai chiều của ảnh được định nghĩa bởi
-\begin{equation}
-    F(u,v)
-    =
-    \sum_{x=0}^{M-1}
-    \sum_{y=0}^{N-1}
-    f(x,y)
-    e^{-j2\pi
-    \left(
-    \frac{ux}{M}
-    +
-    \frac{vy}{N}
-    \right)},
-\end{equation}
+Trong xử lý ảnh số, các thao tác làm mượt (blurring), tìm cạnh (edge detection), hay tăng cường chi tiết đều được thực hiện thông qua \textbf{phép tích chập 2 chiều (2D Convolution)} giữa ma trận điểm ảnh ban đầu và một ma trận bộ lọc (filter kernel / mask).
 
-với $u=0,1,\ldots,M-1$ và $v=0,1,\ldots,N-1$.
+Với các bộ lọc có kích thước lớn, việc trượt ma trận bộ lọc qua từng điểm ảnh tiêu tốn rất nhiều tài nguyên tính toán. Bằng cách áp dụng định lý tích chập, ta dùng 2D FFT (thường được thực hiện bằng cách chạy thuật toán Cooley-Tukey 1D trên các hàng, sau đó chạy tiếp trên các cột) để biến đổi cả bức ảnh và bộ lọc sang phổ tần số không gian. Việc lọc ảnh lúc này đơn giản chỉ là phép nhân từng phần tử trên hai ma trận tần số, sau đó áp dụng IFFT để tạo ra bức ảnh kết quả. Phương pháp này giảm thiểu khối lượng tính toán khổng lồ, làm nền tảng cho việc phân tích ảnh y tế (MRI, CT) hoặc xử lý hình ảnh vệ tinh độ phân giải cao.
 
-Trong đó:
-
-\begin{itemize}
-    \item $f(x,y)$ là giá trị cường độ sáng của ảnh tại vị trí $(x,y)$;
-    \item $F(u,v)$ là phổ tần số của ảnh;
-    \item $u$ và $v$ biểu diễn các thành phần tần số theo hai chiều của ảnh.
-\end{itemize}
-
-Ngược lại, ảnh có thể được khôi phục từ miền tần số bằng biến đổi Fourier nghịch đảo:
-
-\begin{equation}
-    f(x,y)
-    =
-    \frac{1}{MN}
-    \sum_{u=0}^{M-1}
-    \sum_{v=0}^{N-1}
-    F(u,v)
-    e^{j2\pi
-    \left(
-    \frac{ux}{M}
-    +
-    \frac{vy}{N}
-    \right)}.
-\end{equation}
-
-Sau khi áp dụng FFT, ảnh được biểu diễn dưới dạng phổ tần số. Các thành phần tần số thấp thường tập trung gần tâm phổ và chứa thông tin về cấu trúc tổng quát của ảnh. Ngược lại, các thành phần tần số cao chứa thông tin về cạnh, chi tiết nhỏ và nhiễu.
-
-Nhờ làm việc trong miền tần số, nhiều bài toán xử lý ảnh trở nên đơn giản hơn:
-
-\begin{itemize}
-    \item \textbf{Lọc nhiễu ảnh:} Loại bỏ các thành phần tần số không mong muốn để cải thiện chất lượng ảnh.
-
-    \item \textbf{Lọc thông thấp (Low-pass Filter):}
-    Giữ lại các thành phần tần số thấp và loại bỏ tần số cao nhằm làm mượt ảnh.
-
-    \item \textbf{Lọc thông cao (High-pass Filter):}
-    Giữ lại các thành phần tần số cao để tăng cường cạnh và làm nổi bật các chi tiết quan trọng.
-
-    \item \textbf{Khôi phục ảnh:}
-    Loại bỏ hiện tượng mờ do rung máy ảnh hoặc nhiễu trong quá trình thu nhận dữ liệu.
-
-    \item \textbf{Nén ảnh:}
-    Loại bỏ các thành phần tần số ít quan trọng nhằm giảm dung lượng lưu trữ.
-\end{itemize}
-
-Trong thực tế, FFT được sử dụng rộng rãi trong nhiều lĩnh vực như xử lý ảnh y tế (CT, MRI), ảnh vệ tinh, hệ thống camera giám sát, thị giác máy tính và các phần mềm chỉnh sửa ảnh chuyên nghiệp.
-
-Nếu sử dụng trực tiếp công thức DFT hai chiều, số phép tính cần thực hiện là $O(M^2N^2)$. Nhờ FFT hai chiều, độ phức tạp được giảm xuống còn
-
-\begin{equation}
-    O(MN\log(MN)),
-\end{equation}
-
-cho phép xử lý hiệu quả các ảnh có kích thước lớn và đáp ứng yêu cầu của các hệ thống thời gian thực.
-```
-```latex id="8gh2qy"
 \subsection{Xử lý tín hiệu âm thanh}
 
-FFT là một công cụ quan trọng trong lĩnh vực xử lý tín hiệu âm thanh. Các tín hiệu âm thanh như giọng nói, âm nhạc hay tiếng ồn thường được thu nhận dưới dạng tín hiệu theo thời gian. Tuy nhiên, trong nhiều ứng dụng thực tế, việc phân tích các thành phần tần số của tín hiệu lại quan trọng hơn việc quan sát trực tiếp dạng sóng theo thời gian.
+Tương tự như hình ảnh, việc áp dụng các hiệu ứng âm thanh (như tiếng vang - reverb, tiếng vọng - echo) hay các bộ lọc tần số (lọc thông thấp, thông cao để loại bỏ tạp âm) chính là \textbf{phép tích chập 1 chiều (1D Convolution)} giữa tín hiệu âm thanh đầu vào và đáp ứng xung (impulse response) của bộ lọc hoặc không gian âm thanh.
 
-Giả sử tín hiệu âm thanh được lấy mẫu thành dãy
-
-\begin{equation}
-    x(n),
-    \qquad
-    n=0,1,\ldots,N-1.
-\end{equation}
-
-Biến đổi Fourier rời rạc của tín hiệu được xác định bởi
-
-\begin{equation}
-    X(k)
-    =
-    \sum_{n=0}^{N-1}
-    x(n)e^{-j2\pi kn/N},
-\end{equation}
-
-trong đó:
-
-\begin{itemize}
-    \item $x(n)$ là biên độ tín hiệu tại thời điểm lấy mẫu thứ $n$;
-    \item $X(k)$ là thành phần tần số thứ $k$ của tín hiệu;
-    \item $N$ là số lượng mẫu của tín hiệu.
-\end{itemize}
-
-Từ phổ tần số $X(k)$, ta có thể xác định những tần số xuất hiện trong tín hiệu cũng như mức độ đóng góp của từng thành phần tần số.
-
-Để khôi phục tín hiệu ban đầu từ miền tần số, sử dụng biến đổi Fourier nghịch đảo:
-
-\begin{equation}
-    x(n)
-    =
-    \frac{1}{N}
-    \sum_{k=0}^{N-1}
-    X(k)e^{j2\pi kn/N}.
-\end{equation}
-
-Trong miền tần số, các thành phần có biên độ lớn thường tương ứng với những tần số quan trọng của tín hiệu âm thanh, trong khi các thành phần có biên độ nhỏ có thể là nhiễu hoặc các dao động không mong muốn.
-
-Nhờ FFT, nhiều bài toán xử lý âm thanh có thể được thực hiện hiệu quả:
-
-\begin{itemize}
-    \item \textbf{Phân tích phổ âm thanh:}
-    Xác định các tần số xuất hiện trong tín hiệu.
-
-    \item \textbf{Khử nhiễu (Noise Reduction):}
-    Loại bỏ các thành phần tần số không mong muốn để cải thiện chất lượng âm thanh.
-
-    \item \textbf{Lọc tín hiệu:}
-    Giữ lại hoặc loại bỏ các dải tần số nhất định bằng các bộ lọc thông thấp, thông cao hoặc thông dải.
-
-    \item \textbf{Nén âm thanh:}
-    Giảm dung lượng lưu trữ bằng cách loại bỏ các thành phần ít quan trọng đối với cảm nhận của con người.
-
-    \item \textbf{Nhận dạng giọng nói:}
-    Trích xuất các đặc trưng tần số phục vụ cho các hệ thống nhận dạng tiếng nói tự động.
-\end{itemize}
-
-Trong thực tế, FFT được sử dụng rộng rãi trong nhiều ứng dụng như Spotify, Zoom, Google Meet, trợ lý ảo, hệ thống nhận dạng giọng nói và các phần mềm xử lý âm thanh chuyên nghiệp.
-
-Nếu sử dụng trực tiếp công thức DFT, số phép tính cần thực hiện là $O(N^2)$. Nhờ FFT, độ phức tạp được giảm xuống còn
-
-\begin{equation}
-    O(N\log N),
-\end{equation}
-
-giúp xử lý tín hiệu âm thanh theo thời gian thực ngay cả với lượng dữ liệu rất lớn.
-```
+Đối với các đoạn âm thanh dài, việc tính tích chập trực tiếp là bất khả thi cho các hệ thống thời gian thực. Bằng cách cắt âm thanh thành các khung (frames) và áp dụng các kỹ thuật như Overlap-Add hoặc Overlap-Save kết hợp với FFT Cooley-Tukey, tín hiệu được chuyển sang miền tần số, nhân với phổ của bộ lọc và khôi phục lại cực kỳ nhanh chóng. Nhờ ứng dụng tích chập thông qua FFT, các thiết bị di động hay phần mềm hội thoại (Zoom, Google Meet) có thể lọc nhiễu môi trường và xử lý giọng nói ngay trong thời gian thực mà không bị trễ.
