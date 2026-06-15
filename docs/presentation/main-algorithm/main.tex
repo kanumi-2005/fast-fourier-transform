@@ -143,7 +143,7 @@
   \framesubtitle{Chi phí tính toán giá trị trung gian}
 
   Lúc này, giá trị trung gian (cấp 1) có thể được tính qua giá trị trung gian
-  cấp với tổng chi phí là \alert<.>{$12(2 + 2)$ thao tác}:
+  cấp 2 với tổng chi phí là \alert<.>{$12(2 + 2)$ thao tác}:
   \onslide<+->
   \begin{itemize}[<+->]
     \item Cần $2$ thao tác để một giá trị trung gian cấp 2.
@@ -234,4 +234,41 @@
       \end{table}
     \end{column}
   \end{columns}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Dạng đệ quy}
+  \framesubtitle{Mô tả}
+
+  Nếu $N = r_1 \cdot r_2$. Đặt $j = r_1j_1 + j_0$. Khi đó $X(j)$ có thể viết
+  lại thành: \begin{align*}
+    \uncover<+->{
+      X(r_1j_1 + j_0) &= \sum_{k_0 = 0}^{r_2 - 1}W^{jk_0}\sum_{k_1 = 0}^{r_1 -
+      1}A(r_2k_1 + k_0)W_N^{jk_1r_2}, \\
+    }
+    \uncover<+->{
+      &= \sum_{k_0 = 0}^{r_2 - 1}W_{r_2}^{j_1k_0} \biggl( W_N^{j_0k_0}\sum_{k_1
+      = 0}^{r_1 - 1}A(r_2k_1 + k_0)W_{r_1}^{j_0k_1} \biggr).
+    }
+  \end{align*}
+
+  \onslide<+->
+  \begin{rem}
+    \begin{itemize}[<+->]
+      \item Các giá trị trung gian có thể được xem như $r_2$ bài toán kích
+        thước $r_1$.
+      \item Sau đó, mỗi giá trị trung gian nhân thêm hệ số xoay (twiddle
+        factor) $W_N^{j_0k_0}$ tương ứng.
+      \item Cuối cùng, $X$ có thể xem như $r_1$ bài toán kích thước $r_2$.
+    \end{itemize}
+  \end{rem}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Dạng đệ quy}
+  \framesubtitle{Chi phí tính toán}
+  Gọi $M(n)$ là số phép nhân (phức) cho bài toán kích thước $n$. Khi đó, ta có
+  công thức cho trường hợp $N = r_1r_2$ là \begin{equation*}
+    M(N) = r_2M(r_1) + r_1M(r_2) + N.
+  \end{equation*}
 \end{frame}

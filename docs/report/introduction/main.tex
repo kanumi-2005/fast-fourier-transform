@@ -83,6 +83,59 @@ quan trọng nhất trong khoa học máy tính và xử lý tín hiệu số. F
 ứng dụng rộng rãi trong xử lý âm thanh, xử lý ảnh, truyền thông số, y học,
 ra-đa và nhiều lĩnh vực kỹ thuật khác.
 
+\subsection{Biến đổi Fourier ngược}
+
+Sau khi tín hiệu được chuyển từ miền thời gian sang miền tần số bằng biến đổi
+Fourier, ta có thể thực hiện quá trình ngược lại để khôi phục tín hiệu ban đầu.
+Phép biến đổi này được gọi là biến đổi Fourier ngược (IFT).
+
+Nếu FT giúp phân tích tín hiệu $x(t)$ thành các thành phần tần số $X(f)$, thì
+IFT dùng các thành phần tần số đó để tổng hợp lại tín hiệu trong miền thời
+gian. Đối với tín hiệu liên tục, IFT được định nghĩa bởi công thức:
+\begin{equation}
+  x(t)=\int_{-\infty}^{\infty}X(f)e^{i2\pi ft}\,df,
+\end{equation}
+trong đó:
+\begin{itemize}
+    \item $X(f)$: biểu diễn tín hiệu trong miền tần số.
+    \item $x(t)$: tín hiệu sau khi được khôi phục trong miền thời gian.
+    \item $f$: tần số.
+    \item $t$: thời gian.
+    \item $e^{i2\pi ft}$: hàm mũ phức dùng để tổng hợp lại tín hiệu từ các
+    thành phần tần số.
+\end{itemize}
+
+Như vậy, FT và IFT là hai quá trình bổ sung cho nhau. FT dùng để phân tích tín
+hiệu, còn IFT dùng để tái tạo lại tín hiệu ban đầu từ miền tần số.
+
+\subsection{Biến đổi Fourier rời rạc ngược}
+
+Trong thực tế, máy tính không xử lý tín hiệu liên tục mà xử lý các mẫu dữ liệu
+rời rạc. Vì vậy, bên cạnh DFT, người ta cũng sử dụng biến đổi Fourier rời rạc
+ngược (IDFT).
+
+Nếu DFT chuyển dãy dữ liệu rời rạc $x(n)$ từ miền thời gian sang miền tần số
+$X(k)$, thì IDFT thực hiện quá trình ngược lại, tức là khôi phục dãy tín hiệu
+$x(n)$ từ các thành phần tần số $X(k)$. Đối với dãy tần số $X(k)$ gồm $N$ mẫu,
+IDFT được định nghĩa bởi công thức:
+\begin{equation}
+  x(n)=\frac{1}{N}\sum_{k=0}^{N-1}X(k)e^{i\frac{2\pi}{N}kn},
+  \quad n=0,1,\ldots,N-1,
+\end{equation}
+trong đó:
+\begin{itemize}
+    \item $X(k)$: thành phần tín hiệu trong miền tần số.
+    \item $x(n)$: giá trị tín hiệu sau khi được khôi phục tại mẫu thứ $n$.
+    \item $N$: tổng số mẫu dữ liệu.
+    \item $k$: chỉ số thành phần tần số.
+    \item $e^{i\frac{2\pi}{N}kn}$: hệ số mũ phức dùng để tổng hợp lại tín hiệu.
+    \item $\frac{1}{N}$: hệ số chuẩn hóa giúp khôi phục đúng biên độ tín hiệu.
+\end{itemize}
+
+IDFT cho phép tái tạo lại tín hiệu rời rạc ban đầu từ các thành phần tần số đã
+được phân tích bởi DFT. Nếu một tín hiệu được biến đổi bằng DFT rồi sau đó áp
+dụng IDFT, ta có thể thu được lại tín hiệu ban đầu.
+
 \subsection{Lịch sử phát triển}
 
 Ý tưởng nền tảng của thuật toán FFT đã xuất hiện từ rất sớm trong lịch sử toán

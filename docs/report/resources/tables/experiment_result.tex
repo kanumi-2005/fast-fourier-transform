@@ -1,0 +1,12 @@
+\begin{tblr}{
+  colspec = {Q[c,m,2.5cm] Q[c,m,4.5cm] Q[c,m,4.5cm]},
+  hlines,
+  vlines,
+  row{1} = {font=\bfseries},
+}
+  Kích thước ($N$) & Brute-force DFT ($\mu s$) & Cooley--Tukey FFT ($\mu s$) \\
+  256              & 3315                      & 40                          \\
+  1024             & 44792                     & 105                         \\
+  4096             & 673445                    & 509                         \\
+  16384            & 9312718                   & 1616                        \\
+\end{tblr}
