@@ -1,0 +1,195 @@
+\section{Thuật toán Prime Factor FFT}\begin{frame}
+\frametitle{Vấn đề của Cooley--Tukey FFT}
+
+Giả sử $N = r_1 r_2$.
+
+Trong dạng đệ quy, Cooley--Tukey FFT có dạng
+\[
+X(r_1 j_1 + j_0) = \sum_{k_0=0}^{r_2-1} W_{r_2}^{j_1 k_0} \Biggl( W_N^{j_0 k_0} \sum_{k_1=0}^{r_1-1} A(r_2 k_1 + k_0) W_{r_1}^{j_0 k_1} \Biggr).
+\]
+
+\pause
+
+Xuất hiện hệ số $W_N^{j_0 k_0}$ được gọi là \textbf{Twiddle Factor}.
+
+\pause
+
+Câu hỏi: \textit{Có thể loại bỏ hoàn toàn Twiddle Factor hay không?}
+
+\end{frame}
+
+%==================================================
+\begin{frame}
+\frametitle{Good Mapping}
+
+Xét:
+\(
+N = r_1 r_2, \qquad \gcd(r_1, r_2) = 1.
+\)
+
+Thay vì đánh số dữ liệu bởi chỉ số một chiều:
+\(
+n = 0, 1, \dots, N-1,
+\)
+ta ánh xạ sang hai chỉ số:
+\[
+n \leftrightarrow (n_1, n_2),
+\]
+trong đó:
+\(
+n_1 \equiv n \pmod{r_1}, \qquad n_2 \equiv n \pmod{r_2}.
+\)
+
+\pause
+\begin{exmp}
+Với $N = 15 = 3 \cdot 5$, ta có:
+\[
+7 \leftrightarrow (1,2)
+\]
+vì $7 \equiv 1 \pmod{3}$ và $7 \equiv 2 \pmod{5}$.
+\end{exmp}
+
+\pause
+\begin{block}{Ý tưởng chính}
+Biến DFT một chiều độ dài $N$: $X(k) = \sum_{n=0}^{N-1} x(n) W_N^{nk}$ thành DFT hai chiều kích thước $r_1 \times r_2$.
+\end{block}
+
+Mục tiêu: $W_N^{nk} \longrightarrow W_{r_1}^{n_1 k_1} W_{r_2}^{n_2 k_2}$.
+\end{frame}
+
+%==================================================
+\begin{frame}
+\frametitle{Chinese Remainder Theorem (CRT)}
+
+\begin{theorem}[Định lý số dư Trung Hoa]
+Nếu $\gcd(r_1, r_2) = 1$ thì hệ đồng dư
+\(
+\begin{cases}
+x \equiv x_1 \pmod{r_1} \\
+x \equiv x_2 \pmod{r_2}
+\end{cases}
+\) có nghiệm duy nhất modulo $N = r_1 r_2$.
+\end{theorem}
+
+\pause
+Do đó tồn tại song ánh:
+\[
+(x_1, x_2) \Longleftrightarrow x.
+\]
+
+\pause
+\begin{block}{Ý nghĩa đối với FFT}
+Mỗi chỉ số của DFT một chiều được biểu diễn duy nhất bởi một cặp chỉ số hai chiều. Không có dữ liệu nào bị mất trong quá trình ánh xạ.
+\end{block}
+\end{frame}
+
+%==================================================
+\begin{frame}
+\frametitle{Loại bỏ Twiddle Factor}
+
+
+Áp dụng ánh xạ đầu vào: $j = j_1 r_2 + j_2 r_1 \pmod{N}$ và ánh xạ đầu ra: $k = r_1 t_1 k_2 + r_2 t_2 k_1 \pmod{N}$. Thay vào công thức DFT:
+
+\[
+X(k) = \sum_{j_1=0}^{r_1-1} \sum_{j_2=0}^{r_2-1} A(j_1, j_2) W_N^{(j_1 r_2 + j_2 r_1)(r_1 t_1 k_2 + r_2 t_2 k_1)}.
+\]
+\pause
+
+Hai hạng tử $j_1 r_1 r_2 t_1 k_2$ và $j_2 r_1 r_2 t_2 k_1$ đều chứa $r_1 r_2 = N$. Do $W_N^N = 1$, chúng biến mất hoàn toàn.
+
+Ta còn:
+\(
+W_N^{j_1 r_2 t_2 k_1} \cdot W_N^{j_2 r_1^2 t_1 k_2}.
+\)
+
+\pause
+
+Vì $r_2 t_2 \equiv 1 \pmod{r_1}$ nên $W_N^{j_1 r_2 t_2 k_1} = W_{r_1}^{j_1 k_1}$. Tương tự $W_N^{j_2 r_1^2 t_1 k_2} = W_{r_2}^{j_2 k_2}$.
+
+\pause
+
+Không còn xuất hiện twiddle factor.
+
+\pause
+
+Đặt $A'(j_1, j_2) = A(j_1 r_2 + j_2 r_1)$, và $X'(k_1, k_2) = X(r_1 t_1 k_2 + r_2 t_2 k_1)$.
+
+\[
+X'(k_1, k_2) = \sum_{j_1=0}^{r_1-1} \sum_{j_2=0}^{r_2-1} A'(j_1, j_2) W_{r_1}^{j_1 k_1} W_{r_2}^{j_2 k_2}. \tag{29}
+\]
+\end{frame}
+%==================================================
+\begin{frame}
+\frametitle{Ví dụ $N = 15 = 3 \times 5$}
+
+Chọn $r_1 = 3$, $r_2 = 5$. Good Mapping:
+\[
+n \leftrightarrow (n \bmod 3,\, n \bmod 5).
+\]
+
+\pause
+\begin{center}
+\begin{tabular}{c|ccccc}
+$n_1 \setminus n_2$ & 0 & 1 & 2 & 3 & 4 \\
+\hline
+0 & 0 & 6 & 12 & 3 & 9 \\
+1 & 10 & 1 & 7 & 13 & 4 \\
+2 & 5 & 11 & 2 & 8 & 14
+\end{tabular}
+\end{center}
+
+\pause
+Thuật toán:
+\begin{enumerate}
+\item Áp dụng Good Mapping
+\item Tính $5$ DFT độ dài $3$.
+\item Tính $3$ DFT độ dài $5$.
+\item Ghép kết quả bằng CRT.
+\end{enumerate}
+
+\[
+\text{Good Mapping}(15) \;\Rightarrow\; 5 \times \text{DFT}(3) \;\Rightarrow\; 3 \times \text{DFT}(5) \;\Rightarrow\; \text{CRT}(15)
+\]
+
+\end{frame}
+
+%==================================================
+\begin{frame}
+\frametitle{So sánh với Cooley--Tukey FFT}
+
+
+Số phép nhân phức:
+\[
+M_{CT}(N) = r_2 M_{CT}(r_1) + r_1 M_{CT}(r_2) + N.
+\]
+\[
+M_{PFA}(N) = r_2 M_{PFA}(r_1) + r_1 M_{PFA}(r_2).
+\]
+
+
+\begin{table}
+\centering
+\begin{tabular}{|l|c|c|}
+\hline
+\textbf{Đặc điểm} & \textbf{Cooley--Tukey} & \textbf{Prime Factor FFT} \\
+\hline
+Điều kiện & Mọi hợp số & Các thừa số nguyên tố cùng nhau \\
+\hline
+Twiddle Factor & Có & \textbf{Không} \\
+\hline
+Mapping & Common-factor & Good mapping \\
+\hline
+CRT & Không cần & Có \\
+\hline
+Cài đặt & Đơn giản & Phức tạp hơn \\
+\hline
+\end{tabular}
+\end{table}
+
+\pause
+\begin{block}{Kết luận so sánh}
+Prime Factor FFT áp dụng  trong trường hợp các thừa số nguyên tố cùng nhau, sử dụng CRT để chuyển DFT một chiều thành DFT nhiều chiều và loại bỏ Twiddle Factor, từ đó giảm số phép nhân cần thực hiện.
+\end{block}
+\end{frame}
+
+
