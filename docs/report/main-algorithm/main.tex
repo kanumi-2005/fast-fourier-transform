@@ -113,7 +113,7 @@ Sau đó mỗi giá trị $A_1$ được nhân một hệ số xoay (twiddle fac
 Cuối cùng $X$ có thể tính như $r_1$ bài toán con kích thước $r_2$. Kí hiệu
 $M(n)$ là số phép nhân (phức) của bài toán kích thước $n$. Khi này số phép nhân
 của thuật toán này là \begin{equation}
-  M(N) = M(r_1) + M(r_2) + N.
+  M(N) = r_2M(r_1) + r_1M(r_2) + N.
 \end{equation}
 
 % \subsection{Mã giả}

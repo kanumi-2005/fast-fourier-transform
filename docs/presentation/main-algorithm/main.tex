@@ -252,8 +252,9 @@
     }
   \end{align*}
 
+  \onslide<+->
   \begin{rem}
-    \begin{itemize}
+    \begin{itemize}[<+->]
       \item Các giá trị trung gian có thể được xem như $r_2$ bài toán kích
         thước $r_1$.
       \item Sau đó, mỗi giá trị trung gian nhân thêm hệ số xoay (twiddle
@@ -268,6 +269,6 @@
   \framesubtitle{Chi phí tính toán}
   Gọi $M(n)$ là số phép nhân (phức) cho bài toán kích thước $n$. Khi đó, ta có
   công thức cho trường hợp $N = r_1r_2$ là \begin{equation*}
-    M(N) = M(r_1) + M(r_2) + N.
+    M(N) = r_2M(r_1) + r_1M(r_2) + N.
   \end{equation*}
 \end{frame}
