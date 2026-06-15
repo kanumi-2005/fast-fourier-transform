@@ -26,19 +26,6 @@
     Thay vì tính $\mathcal{O}(N^2)$ ở không gian gốc, ta tính $\mathcal{O}(N)$ ở không gian tần số. Vấn đề còn lại là: \textit{Làm sao chuyển miền đủ nhanh?}
 \end{frame}
 
-\begin{frame}{Thuật toán Cooley-Tukey (FFT)}
-    \begin{itemize}
-        \item \textbf{Ý tưởng:} Chia để trị (Divide and Conquer).
-        \item Chia bài toán DFT kích thước $N$ thành các bài toán chẵn - lẻ kích thước $N/2$.
-        \item Khai thác tính đối xứng của nghiệm phức đơn vị: $\omega_N = e^{-j2\pi/N}$.
-    \end{itemize}
-    \vspace{0.5cm}
-    
-    \begin{alertblock}{Kết quả}
-        Giảm độ phức tạp chuyển miền (DFT) từ $\mathcal{O}(N^2)$ xuống chỉ còn $\mathcal{O}(N \log N)$.
-    \end{alertblock}
-\end{frame}
-
 \begin{frame}{Quy trình Tích chập nhanh }
     Để tính $(x * h)$ bằng FFT, ta thực hiện 4 bước sau:
     \vspace{0.3cm}
