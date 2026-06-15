@@ -6,7 +6,7 @@ Prime Factor Algorithm (PFA) là một biến thể của FFT áp dụng khi \(N
 
 Biến đổi Fourier rời rạc (DFT) kích thước $N$ được định nghĩa bởi
 \begin{equation}
-X(k)=\sum_{j=0}^{N-1}A(j)W_N^{jk}, \qquad W_N=e^{2\pi i/N}.
+X(k)=\sum_{j=0}^{N-1}A(j)W_N^{jk}, \qquad W_N=e^{-2\pi i/N}.
 \end{equation}
 Khi $N$ lớn, việc tính trực tiếp cần $O(N^2)$ phép nhân phức.
 
@@ -27,7 +27,7 @@ Khi đó ta thu được:
 \begin{equation}
 W_N^{jk} = W_{r_1}^{j_1 k_1} \cdot W_{r_2}^{j_2 k_2}.
 \end{equation}
-Hoàn toàn không có twiddle factor $W_N^{j_0 k_1}$ như trong Cooley--Tukey.
+Hoàn toàn không có twiddle factor $W_N^{j_0 k_0}$ như trong Cooley--Tukey.
 
 Nhờ vậy, DFT một chiều kích thước $N$ được biến đổi thành DFT hai chiều kích thước $r_1 \times r_2$ độc lập:
 \begin{equation}
