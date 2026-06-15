@@ -1,0 +1,53 @@
+\section{Ứng dụng FFT}
+
+\subsection{Phép tích chập và bản chất toán học}
+
+Phép tích chập (convolution) là một phép toán cốt lõi trong toán học ứng dụng và xử lý tín hiệu. Về bản chất, nó đo lường mức độ chồng lấp giữa hai hàm số khi một hàm được "lật ngược" (folding) và "dịch chuyển" (shifting) qua hàm kia. 
+
+Đối với hai dãy tín hiệu rời rạc $x[n]$ và $h[n]$, phép tích chập tuyến tính được định nghĩa bởi phương trình:
+
+\begin{equation}
+    (x * h)[n] = \sum_{m=-\infty}^{\infty} x[m] h[n - m].
+\end{equation}
+
+Trong thực tế tính toán với máy tính, ta làm việc với các dãy tuần hoàn hoặc có chiều dài hữu hạn $N$. Khi đó, ta sử dụng phép tích chập vòng (circular convolution):
+
+\begin{equation}
+    (x \circledast h)[n] = \sum_{m=0}^{N-1} x[m] h[(n - m) \bmod N].
+\end{equation}
+
+Tính toán trực tiếp biểu thức này đòi hỏi số lượng phép tính tỷ lệ với $O(N^2)$, một rào cản lớn khi $N$ trỏ nên khổng lồ. Tuy nhiên, \textbf{Định lý tích chập} đã tạo ra một bước ngoặt khi chứng minh rằng: Phép tích chập vòng trong miền thời gian/không gian hoàn toàn tương đương với phép nhân từng phần tử trong miền tần số. 
+
+\begin{equation}
+    \text{DFT}\{x \circledast h\} = \text{DFT}\{x\} \cdot \text{DFT}\{h\}.
+\end{equation}
+
+Quy trình tính tích chập nhanh (Fast Convolution) thông qua FFT diễn ra như sau:
+\begin{enumerate}
+    \item Đệm thêm các số 0 (zero-padding) cho hai dãy $x$ và $h$ để đạt chiều dài $N$ phù hợp (nếu cần tính tích chập tuyến tính).
+    \item Áp dụng FFT Cooley-Tukey để tính các phổ tần số $X = \text{FFT}(x)$ và $H = \text{FFT}(h)$ trong thời gian $O(N \log N)$.
+    \item Thực hiện nhân từng phần tử $Y[k] = X[k] \cdot H[k]$ trong thời gian $O(N)$.
+    \item Áp dụng FFT nghịch đảo (IFFT) dựa trên cùng lõi thuật toán Cooley-Tukey để đưa dãy $Y$ về lại miền ban đầu, thu được kết quả $(x * h)$ với tổng thời gian $O(N \log N)$.
+\end{enumerate}
+
+Tư duy chuyển từ phép tính chập không gian sang phép nhân tần số này chính là nền tảng cho hàng loạt các ứng dụng dưới đây.
+
+\subsection{Nhân đa thức}
+
+Bài toán nhân đa thức về bản chất toán học chính là \textbf{phép tích chập tuyến tính} của hai dãy hệ số. 
+
+Cho hai đa thức $A(x) = \sum_{i=0}^{n-1} a_i x^i$ và $B(x) = \sum_{j=0}^{m-1} b_j x^j$. Hệ số $c_k$ của đa thức tích $C(x) = A(x)B(x)$ được tính bằng công thức $c_k = \sum a_i b_{k-i}$. Đây chính xác là định nghĩa của phép tích chập $(a * b)$.
+
+Thay vì nhân phân phối từng hệ số với độ phức tạp $O(N^2)$, ta xem dãy hệ số của hai đa thức như hai tín hiệu. Ta đệm số 0 cho cả hai dãy đạt chiều dài $N \ge n+m-1$ (với $N$ là lũy thừa của 2), sau đó dùng thuật toán FFT Cooley-Tukey chuyển chúng sang miền tần số (tương đương với việc tính giá trị của đa thức tại $N$ nghiệm phức). Tiếp theo, ta nhân các giá trị này lại với nhau và dùng IFFT để nội suy ngược ra dãy hệ số $c_k$. Ứng dụng tích chập này giúp bài toán nhân đa thức lớn (dùng trong mật mã học RSA, tính toán số nguyên lớn) đạt tốc độ vượt trội $O(N \log N)$.
+
+\subsection{Xử lý ảnh}
+
+Trong xử lý ảnh số, các thao tác làm mượt (blurring), tìm cạnh (edge detection), hay tăng cường chi tiết đều được thực hiện thông qua \textbf{phép tích chập 2 chiều (2D Convolution)} giữa ma trận điểm ảnh ban đầu và một ma trận bộ lọc (filter kernel / mask).
+
+Với các bộ lọc có kích thước lớn, việc trượt ma trận bộ lọc qua từng điểm ảnh tiêu tốn rất nhiều tài nguyên tính toán. Bằng cách áp dụng định lý tích chập, ta dùng 2D FFT (thường được thực hiện bằng cách chạy thuật toán Cooley-Tukey 1D trên các hàng, sau đó chạy tiếp trên các cột) để biến đổi cả bức ảnh và bộ lọc sang phổ tần số không gian. Việc lọc ảnh lúc này đơn giản chỉ là phép nhân từng phần tử trên hai ma trận tần số, sau đó áp dụng IFFT để tạo ra bức ảnh kết quả. Phương pháp này giảm thiểu khối lượng tính toán khổng lồ, làm nền tảng cho việc phân tích ảnh y tế (MRI, CT) hoặc xử lý hình ảnh vệ tinh độ phân giải cao.
+
+\subsection{Xử lý tín hiệu âm thanh}
+
+Tương tự như hình ảnh, việc áp dụng các hiệu ứng âm thanh (như tiếng vang - reverb, tiếng vọng - echo) hay các bộ lọc tần số (lọc thông thấp, thông cao để loại bỏ tạp âm) chính là \textbf{phép tích chập 1 chiều (1D Convolution)} giữa tín hiệu âm thanh đầu vào và đáp ứng xung (impulse response) của bộ lọc hoặc không gian âm thanh.
+
+Đối với các đoạn âm thanh dài, việc tính tích chập trực tiếp là bất khả thi cho các hệ thống thời gian thực. Bằng cách cắt âm thanh thành các khung (frames) và áp dụng các kỹ thuật như Overlap-Add hoặc Overlap-Save kết hợp với FFT Cooley-Tukey, tín hiệu được chuyển sang miền tần số, nhân với phổ của bộ lọc và khôi phục lại cực kỳ nhanh chóng. Nhờ ứng dụng tích chập thông qua FFT, các thiết bị di động hay phần mềm hội thoại (Zoom, Google Meet) có thể lọc nhiễu môi trường và xử lý giọng nói ngay trong thời gian thực mà không bị trễ.

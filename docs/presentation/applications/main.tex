@@ -1,0 +1,91 @@
+% ================= MỤC 1 =================
+\section{Ứng dụng}
+
+\begin{frame}{Phép tích chập là gì?}
+    Phép tích chập (Convolution) đo lường mức độ chồng lấp giữa hai hàm số khi một hàm được lật ngược và dịch chuyển qua hàm kia.
+    \vspace{0.5cm}
+    
+    \textbf{Tích chập tuyến tính} cho hai dãy rời rạc $x[n]$ và $h[n]$:
+    $$(x * h)[n] = \sum_{m=-\infty}^{\infty} x[m] h[n - m]$$
+    \vspace{0.3cm}
+    
+    \textbf{Tích chập vòng} (áp dụng cho dãy độ dài hữu hạn $N$):
+    $$(x \circledast h)[n] = \sum_{m=0}^{N-1} x[m] h[(n - m) \bmod N]$$
+\end{frame}
+
+\begin{frame}{Định lý Tích chập: Chìa khóa chuyển miền}
+    Tính toán trực tiếp tích chập cần độ phức tạp $\mathcal{O}(N^2)$. Tuy nhiên, Định lý Tích chập tạo ra bước ngoặt lớn:
+    \vspace{0.5cm}
+    
+    \begin{block}{Định lý Tích chập}
+        Phép tích chập vòng trong miền thời gian/không gian hoàn toàn tương đương với phép \textbf{nhân từng phần tử} trong miền tần số.
+        $$\text{DFT}\{x \circledast h\} = \text{DFT}\{x\} \cdot \text{DFT}\{h\}$$
+    \end{block}
+    \vspace{0.5cm}
+    
+    Thay vì tính $\mathcal{O}(N^2)$ ở không gian gốc, ta tính $\mathcal{O}(N)$ ở không gian tần số. Vấn đề còn lại là: \textit{Làm sao chuyển miền đủ nhanh?}
+\end{frame}
+
+\begin{frame}{Quy trình Tích chập nhanh }
+    Để tính $(x * h)$ bằng FFT, ta thực hiện 4 bước sau:
+    \vspace{0.3cm}
+    \begin{enumerate}
+        \item \textbf{Đệm 0 (Zero-padding):} Đệm thêm các số $0$ cho $x$ và $h$ để đạt chiều dài $N$ (thường là lũy thừa của 2).
+        \item \textbf{Chuyển miền (FFT):} Tính $X = \text{FFT}(x)$ và $H = \text{FFT}(h)$. \\ $\Rightarrow$ Tốn $\mathcal{O}(N \log N)$.
+        \item \textbf{Nhân phổ:} Lấy $Y[k] = X[k] \cdot H[k]$ với mọi $k$. \\ $\Rightarrow$ Tốn $\mathcal{O}(N)$.
+        \item \textbf{Dịch ngược (IFFT):} Khôi phục kết quả bằng $\text{IFFT}(Y)$. \\ $\Rightarrow$ Tốn $\mathcal{O}(N \log N)$.
+    \end{enumerate}
+    \vspace{0.3cm}
+    \textbf{Tổng thời gian:} $\mathcal{O}(N \log N)$ thay vì $\mathcal{O}(N^2)$.
+\end{frame}
+
+% ================= MỤC 2 =================
+\begin{frame}{Nhân đa thức: Bản chất là Tích chập}
+    Cho hai đa thức $A(x) = \sum_{i=0}^{n-1} a_i x^i$ và $B(x) = \sum_{j=0}^{m-1} b_j x^j$.
+    \vspace{0.3cm}
+    
+    Đa thức tích $C(x) = A(x)B(x)$ có hệ số $c_k$ được tính bằng:
+    $$c_k = \sum a_i b_{k-i}$$
+    
+    \begin{itemize}
+        \item Biểu thức trên \textbf{chính xác} là định nghĩa của phép tích chập tuyến tính giữa hai dãy hệ số: $(a * b)$.
+        \item \textbf{Giải pháp:} Đệm $0$ cho hai dãy đạt chiều dài $N \ge n+m-1$, rồi áp dụng quy trình \textit{Fast Convolution} bằng thuật toán Cooley-Tukey.
+        \item \textbf{Ứng dụng:} Mật mã học (RSA), tính toán số nguyên cực lớn, đại số máy tính.
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{Xử lý ảnh: Phép lọc và Tích chập 2D}
+    Trong ảnh số, làm mượt (blur), tìm cạnh (edge detection) đều là \textbf{phép tích chập 2 chiều} giữa:
+    \begin{itemize}
+        \item Ma trận điểm ảnh ban đầu.
+        \item Ma trận bộ lọc (Filter kernel / Mask).
+    \end{itemize}
+    \vspace{0.5cm}
+    
+    \textbf{Vấn đề:} Trượt một bộ lọc lớn qua từng pixel tiêu tốn tài nguyên khổng lồ.
+    \vspace{0.3cm}
+    
+    \textbf{Giải pháp bằng FFT 2D:}
+    \begin{enumerate}
+        \item Biến đổi cả ảnh và bộ lọc sang phổ tần số không gian (dùng FFT 1D trên hàng, sau đó trên cột).
+        \item Nhân từng phần tử hai ma trận tần số.
+        \item Dùng IFFT 2D khôi phục ảnh.
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}{Xử lý âm thanh: Lọc và Hiệu ứng}
+    Các hiệu ứng (reverb, echo) hay lọc tạp âm (lọc thông thấp, thông cao) chính là \textbf{phép tích chập 1 chiều} giữa:
+    \begin{itemize}
+        \item Tín hiệu âm thanh đầu vào.
+        \item Đáp ứng xung (Impulse response) của bộ lọc.
+    \end{itemize}
+    \vspace{0.5cm}
+    
+    \textbf{Tối ưu cho thời gian thực (Real-time):}
+    \begin{itemize}
+        \item Việc tính tích chập trực tiếp trên đoạn âm thanh dài là bất khả thi.
+        \item \textbf{Kỹ thuật:} Cắt âm thanh thành các khung (frames).
+        \item Kết hợp các phương pháp \textit{Overlap-Add} hoặc \textit{Overlap-Save} với FFT Cooley-Tukey.
+        \item \textbf{Kết quả:} Lọc nhiễu, xử lý giọng nói tức thời (Zoom, Google Meet, trợ lý ảo) mà không bị trễ.
+    \end{itemize}
+\end{frame}
