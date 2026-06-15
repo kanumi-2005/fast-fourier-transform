@@ -1,14 +1,5 @@
-% ================= Frame Title & Mục lục =================
-\begin{frame}
-    \titlepage
-\end{frame}
-
-\begin{frame}{Nội dung trình bày}
-    \tableofcontents
-\end{frame}
-
 % ================= MỤC 1 =================
-\section{Bản chất toán học của Tích chập}
+\section{Ứng dụng}
 
 \begin{frame}{Phép tích chập là gì?}
     Phép tích chập (Convolution) đo lường mức độ chồng lấp giữa hai hàm số khi một hàm được lật ngược và dịch chuyển qua hàm kia.
@@ -48,7 +39,7 @@
     \end{alertblock}
 \end{frame}
 
-\begin{frame}{Quy trình Tích chập nhanh (Fast Convolution)}
+\begin{frame}{Quy trình Tích chập nhanh }
     Để tính $(x * h)$ bằng FFT, ta thực hiện 4 bước sau:
     \vspace{0.3cm}
     \begin{enumerate}
@@ -62,8 +53,6 @@
 \end{frame}
 
 % ================= MỤC 2 =================
-\section{Nhân đa thức}
-
 \begin{frame}{Nhân đa thức: Bản chất là Tích chập}
     Cho hai đa thức $A(x) = \sum_{i=0}^{n-1} a_i x^i$ và $B(x) = \sum_{j=0}^{m-1} b_j x^j$.
     \vspace{0.3cm}
@@ -77,9 +66,6 @@
         \item \textbf{Ứng dụng:} Mật mã học (RSA), tính toán số nguyên cực lớn, đại số máy tính.
     \end{itemize}
 \end{frame}
-
-% ================= MỤC 3 =================
-\section{Xử lý ảnh (Tích chập 2D)}
 
 \begin{frame}{Xử lý ảnh: Phép lọc và Tích chập 2D}
     Trong ảnh số, làm mượt (blur), tìm cạnh (edge detection) đều là \textbf{phép tích chập 2 chiều} giữa:
@@ -100,9 +86,6 @@
     \end{enumerate}
 \end{frame}
 
-% ================= MỤC 4 =================
-\section{Xử lý tín hiệu âm thanh (Tích chập 1D)}
-
 \begin{frame}{Xử lý âm thanh: Lọc và Hiệu ứng}
     Các hiệu ứng (reverb, echo) hay lọc tạp âm (lọc thông thấp, thông cao) chính là \textbf{phép tích chập 1 chiều} giữa:
     \begin{itemize}
@@ -118,14 +101,4 @@
         \item Kết hợp các phương pháp \textit{Overlap-Add} hoặc \textit{Overlap-Save} với FFT Cooley-Tukey.
         \item \textbf{Kết quả:} Lọc nhiễu, xử lý giọng nói tức thời (Zoom, Google Meet, trợ lý ảo) mà không bị trễ.
     \end{itemize}
-\end{frame}
-
-% ================= KẾT LUẬN =================
-\begin{frame}{Tổng kết}
-    \begin{center}
-        \Large Mọi bài toán xử lý tín hiệu, hình ảnh hay đa thức lớn đều hội tụ về một gốc: \\ \textbf{Phép Tích Chập}.
-        \vspace{0.8cm}
-        
-        \normalsize Và \textbf{FFT (Thuật toán Cooley-Tukey)} chính là cỗ máy biến phép toán khổng lồ này trở nên khả thi trong thực tiễn.
-    \end{center}
 \end{frame}

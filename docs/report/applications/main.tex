@@ -22,9 +22,7 @@ Tính toán trực tiếp biểu thức này đòi hỏi số lượng phép tí
     \text{DFT}\{x \circledast h\} = \text{DFT}\{x\} \cdot \text{DFT}\{h\}.
 \end{equation}
 
-Để hiện thực hóa định lý này một cách tối ưu, ta sử dụng \textbf{Thuật toán Cooley--Tukey} để tính toán Biến đổi Fourier Rời rạc (DFT). Thuật toán Cooley-Tukey áp dụng chiến lược chia để trị (divide and conquer), chia một bài toán DFT kích thước $N$ (thường là lũy thừa của 2) thành các bài toán chẵn - lẻ có kích thước $N/2$. Nhờ khai thác tính chất đối xứng và tuần hoàn của các nghiệm phức của đơn vị $\omega_N = e^{-j2\pi/N}$, thuật toán này giảm đột phá độ phức tạp của bước chuyển miền từ $O(N^2)$ xuống chỉ còn $O(N \log N)$.
-
-Quy trình tính tích chập nhanh (Fast Convolution) thông qua FFT Cooley-Tukey diễn ra như sau:
+Quy trình tính tích chập nhanh (Fast Convolution) thông qua FFT diễn ra như sau:
 \begin{enumerate}
     \item Đệm thêm các số 0 (zero-padding) cho hai dãy $x$ và $h$ để đạt chiều dài $N$ phù hợp (nếu cần tính tích chập tuyến tính).
     \item Áp dụng FFT Cooley-Tukey để tính các phổ tần số $X = \text{FFT}(x)$ và $H = \text{FFT}(h)$ trong thời gian $O(N \log N)$.
