@@ -37,14 +37,17 @@ có thể tính bằng cách thực hiện lần lượt DFT trên từng hàng 
 
 \subsection{Định lý thặng dư Trung Hoa và Good Mapping}
 
-CRT phát biểu rằng nếu \((r_1, r_2) = 1\), thì hệ
+\textbf{Định lý Thặng dư Trung Hoa (CRT):} 
+Cho $r_1$ và $r_2$ là hai số nguyên tố cùng nhau ($(r_1, r_2) = 1$), đặt $N = r_1 r_2$. 
+Nếu biết $k \equiv k_1 \pmod{r_1}$ và $k \equiv k_2 \pmod{r_2}$ thì tồn tại duy nhất 
+một lớp số dư $k \pmod{N}$ được xác định bởi:
 \[
-\begin{cases}
-k \equiv k_1 \pmod{r_1},\\
-k \equiv k_2 \pmod{r_2},
-\end{cases}
+k \equiv r_1 t_1 k_2 + r_2 t_2 k_1 \pmod{N},
 \]
-có nghiệm duy nhất modulo \(N = r_1 r_2\).
+trong đó $t_1$ là nghịch đảo modulo của $N_1$ theo modulo $N_2$ 
+(nghĩa là $t_1 r_1 \equiv 1 \pmod{r_2}$), và $t_2$ là nghịch đảo modulo của $r_2$ 
+theo modulo $r_1$ (nghĩa là $t_2 r_2 \equiv 1 \pmod{r_1}$). 
+Các nghịch đảo này luôn tồn tại vì $(r_1, r_2) = 1$.
 
 Good Mapping là một cách biểu diễn khác của CRT, ánh xạ chỉ số \(j \in \{0, \dots, N-1\}\) thành cặp \((j_1, j_2)\) theo công thức
 \[
