@@ -1,0 +1,134 @@
+\section{Thuật toán Prime Factor FFT}
+
+Prime Factor Algorithm (PFA) là một biến thể của FFT áp dụng khi \(N = r_1 r_2\) và \((r_1, r_2) = 1\). Thuật toán sử dụng ánh xạ Good kết hợp với Định lý Thặng dư Trung Hoa (CRT) để phân rã DFT kích thước \(N\) thành các DFT kích thước nhỏ hơn.
+
+\subsection{Ý tưởng chung của Prime Factor FFT}
+
+Biến đổi Fourier rời rạc (DFT) kích thước $N$ được định nghĩa bởi
+\begin{equation}
+X(k)=\sum_{j=0}^{N-1}A(j)W_N^{jk}, \qquad W_N=e^{-2\pi i/N}.
+\end{equation}
+Khi $N$ lớn, việc tính trực tiếp cần $O(N^2)$ phép nhân phức.
+
+Các thuật toán FFT nhằm giảm độ phức tạp bằng cách khai thác cấu trúc của $N$. 
+Giả sử $N = r_1 r_2$ với $(r_1,r_2)=1$. Xét hai cách tiếp cận:
+
+\paragraph{Cooley--Tukey FFT:}
+Phân tách chỉ số theo $j = r_1 j_1 + j_0$ và $k = r_2 k_1 + k_0$. Khi đó xuất hiện thừa số $W_N^{j_0 k_1}$, được gọi là \textit{twiddle factor}, làm phát sinh thêm các phép nhân trung gian.
+
+\paragraph{Prime Factor FFT (PFA):}
+Ngược lại, PFA sử dụng \textit{Good Mapping} kết hợp với Định lý Thặng dư Trung Hoa (CRT) để xây dựng hệ chỉ số đặc biệt:
+\begin{itemize}
+    \item Ánh xạ đầu vào: $j \equiv j_1 r_2 + j_2 r_1 \pmod{N}$
+    \item Ánh xạ đầu ra: $k \equiv r_1 t_1 k_2 + r_2 t_2 k_1 \pmod{N}$
+\end{itemize}
+với $t_1, t_2$ là các số thỏa mãn $r_2 t_2 \equiv 1 \pmod{r_1}$ và $r_1 t_1 \equiv 1 \pmod{r_2}$. 
+Khi đó ta thu được:
+\begin{equation}
+W_N^{jk} = W_{r_1}^{j_1 k_1} \cdot W_{r_2}^{j_2 k_2}.
+\end{equation}
+Hoàn toàn không có twiddle factor $W_N^{j_0 k_0}$ như trong Cooley--Tukey.
+
+Nhờ vậy, DFT một chiều kích thước $N$ được biến đổi thành DFT hai chiều kích thước $r_1 \times r_2$ độc lập:
+\begin{equation}
+X'(k_1,k_2) = \sum_{j_1=0}^{r_1-1} \sum_{j_2=0}^{r_2-1} A'(j_1,j_2) W_{r_1}^{j_1 k_1} W_{r_2}^{j_2 k_2},
+\end{equation}
+có thể tính bằng cách thực hiện lần lượt DFT trên từng hàng (kích thước $r_2$) rồi trên từng cột (kích thước $r_1$) mà không cần bất kỳ phép nhân trung gian nào. Chính vì vậy, PFA thường được gọi là phương pháp \textit{Costless Mono-to-Multidimensional Mapping}.
+
+\subsection{Định lý thặng dư Trung Hoa và Good Mapping}
+
+CRT phát biểu rằng nếu \((r_1, r_2) = 1\), thì hệ
+\[
+\begin{cases}
+k \equiv k_1 \pmod{r_1},\\
+k \equiv k_2 \pmod{r_2},
+\end{cases}
+\]
+có nghiệm duy nhất modulo \(N = r_1 r_2\).
+
+Good Mapping là một cách biểu diễn khác của CRT, ánh xạ chỉ số \(j \in \{0, \dots, N-1\}\) thành cặp \((j_1, j_2)\) theo công thức
+\[
+j \equiv j_1 r_2 + j_2 r_1 \pmod{N},
+\]
+với \(0 \le j_1 < r_1\), \(0 \le j_2 < r_2\). Ánh xạ này là song ánh.
+
+\subsection{Áp dụng ánh xạ}
+
+Áp dụng ánh xạ đầu vào: $j = j_1 r_2 + j_2 r_1 \pmod N$ và ánh xạ đầu ra: $k = r_1 t_1 k_2 + r_2 t_2 k_1 \pmod N$. Thay vào công thức DFT:
+\begin{align}
+X(k) = \sum_{j_1=0}^{r_1-1} \sum_{j_2=0}^{r_2-1} A(j_1,j_2) W_N^{(j_1 r_2 + j_2 r_1)(r_1 t_1 k_2 + r_2 t_2 k_1)}.
+\end{align}
+
+Khai triển số mũ:
+\begin{align}
+&(j_1 r_2 + j_2 r_1)(r_1 t_1 k_2 + r_2 t_2 k_1) \\
+&= j_1 r_1 r_2 t_1 k_2 + j_1 r_2^2 t_2 k_1 + j_2 r_1^2 t_1 k_2 + j_2 r_1 r_2 t_2 k_1.
+\end{align}
+Hai hạng tử $j_1 r_1 r_2 t_1 k_2$ và $j_2 r_1 r_2 t_2 k_1$ đều chứa $r_1 r_2 = N$. Do $W_N^N = 1$, chúng biến mất hoàn toàn. Ta còn $W_N^{j_1 r_2^2 t_2 k_1} W_N^{j_2 r_1^2 t_1 k_2}$. Vì $r_2 t_2 \equiv 1 \pmod{r_1}$, suy ra $W_N^{j_1 r_2^2 t_2 k_1} = W_{r_1}^{j_1 k_1}$. Tương tự $W_N^{j_2 r_1^2 t_1 k_2} = W_{r_2}^{j_2 k_2}$. Do đó
+\begin{equation}
+W_N^{jk} = W_{r_1}^{j_1 k_1} W_{r_2}^{j_2 k_2}.
+\end{equation}
+Không còn xuất hiện twiddle factor.
+
+Đặt $A'(j_1,j_2) = A(j_1 r_2 + j_2 r_1)$, và $X'(k_1,k_2) = X(r_1 t_1 k_2 + r_2 t_2 k_1)$. Khi đó DFT hai chiều thu được
+\begin{equation}
+X'(k_1,k_2) = \sum_{j_1=0}^{r_1-1} \sum_{j_2=0}^{r_2-1} A'(j_1,j_2) W_{r_1}^{j_1 k_1} W_{r_2}^{j_2 k_2}.
+\end{equation}
+
+Sau khi ánh xạ Good Mapping và CRT, DFT một chiều kích thước \(N = r_1 r_2\) với \((r_1, r_2)=1\) được chuyển thành DFT hai chiều kích thước \(r_1 \times r_2\) độc lập. Để tính DFT hai chiều này, ta thực hiện lần lượt:
+\begin{enumerate}
+    \item Với mỗi chỉ số \(j_1\) (từng hàng), tính DFT một chiều kích thước \(r_2\) trên biến \(j_2\).
+    \item Với mỗi chỉ số \(j_2\) (từng cột), tính DFT một chiều kích thước \(r_1\) trên biến \(j_1\).
+\end{enumerate}
+
+Hai bước này hoàn toàn độc lập, không cần nhân thêm hệ số trung gian.
+
+\subsection{Chi phí tính toán}
+
+Gọi \(M(N)\) và \(A(N)\) lần lượt là số phép nhân và phép cộng phức cho FFT kích thước \(N\). Khi đó với PFA phân tích \(N = r_1 r_2\), \((r_1, r_2) = 1\):
+\[
+M(N) = r_1 M(r_2) + r_2 M(r_1), \qquad
+A(N) = r_1 A(r_2) + r_2 A(r_1).
+\]
+
+Để thuật toán PFA có tính thực tiễn cao, cần có sẵn các thuật toán FFT con tối ưu cho các kích thước nhỏ. Các giá trị:
+\[
+r_i = 2,\ 3,\ 4,\ 5,\ 7,\ 8,\ 16
+\]
+là đủ để tạo ra một tập dày đặc các kích thước \(N\) khả thi trong thực tế.
+
+Các kích thước này được chọn vì:
+\begin{itemize}
+    \item Chúng nguyên tố cùng nhau hoặc là lũy thừa của 2 (nhưng khi kết hợp với các số lẻ thì vẫn đảm bảo tính nguyên tố cùng nhau từng đôi một).
+    \item Có thuật toán FFT con tối ưu về số phép nhân và cộng.
+    \item Tích của chúng bao phủ được nhiều giá trị \(N\) khác nhau.
+\end{itemize}
+
+\subsection{So sánh với Cooley--Tukey FFT}
+
+Dựa trên các phân tích ở phần trước, ta có thể so sánh trực tiếp hai thuật toán Cooley--Tukey và Prime Factor FFT (PFA) cho trường hợp \(N = r_1 r_2\) với \((r_1, r_2) = 1\).
+
+Số thao tác cần thực hiện là:
+\begin{equation}
+T_{\text{CT}} = T_{\text{PFA}} = N(r_1 + r_2) \quad \text{(vẫn vậy về mặt tổng số thao tác)}.
+\end{equation}
+Tuy nhiên, \textbf{điểm khác biệt quan trọng} nằm ở chỗ: trong Cooley--Tukey, \(N(r_1 + r_2)\) thao tác bao gồm cả phép nhân với twiddle factors, còn trong PFA, toàn bộ thao tác đều là các phép nhân trong FFT con thuần túy.
+
+Trong dạng đệ quy, số phép nhân phức trong Cooley--Tukey có:
+\begin{equation}
+M_{\text{CT}}(N) = r_2M_{\text{CT}}(r_1) + r_1M_{\text{CT}}(r_2) + N.
+\end{equation}
+Prime Factor FFT có:
+\begin{equation}
+M_{\text{PFA}}(N) = r_1 M_{\text{PFA}}(r_2) + r_2 M_{\text{PFA}}(r_1).
+\end{equation}
+
+Do không có số hạng \(+N\) như trong Cooley--Tukey, PFA tiết kiệm được \textbf{toàn bộ chi phí của twiddle factors}. Với \(N\) lớn, chi phí này là đáng kể.
+
+\paragraph{Kết luận so sánh:}
+\begin{itemize}
+    \item \textbf{Về cấu trúc:} PFA loại bỏ hoàn toàn twiddle factors nhờ Good Mapping và CRT, trong khi Cooley--Tukey không thể.
+    \item \textbf{Về số phép nhân:} Với cùng các FFT con được tối ưu, PFA có số phép nhân ít hơn Cooley--Tukey, đặc biệt khi các thừa số nguyên tố cùng nhau.
+    \item \textbf{Về phạm vi áp dụng:} Cooley--Tukey áp dụng cho mọi \(N\), kể cả khi các thừa số không nguyên tố cùng nhau. PFA chỉ áp dụng khi các thừa số \textit{đôi một nguyên tố cùng nhau}.
+    \item \textbf{Về tính thực tế:} PFA thường được dùng kết hợp với các FFT con tối ưu (Winograd) để đạt hiệu suất cao nhất cho các kích thước có nhiều thừa số nguyên tố cùng nhau. Cooley--Tukey phổ biến hơn do tính tổng quát và dễ cài đặt.
+\end{itemize}
