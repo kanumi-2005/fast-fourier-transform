@@ -97,6 +97,25 @@ số lớn.
   \import{\tablespath}{r-r_log2r}
 \end{table}
 
+\subsection{Dạng đệ quy}
+
+Quay lại trường hợp hai thừa số, tức là $N = r_1r_2$. Để phân biệt các căn bậc
+khác nhau của đơn vị thì ta kí hiệu $W_n$ là căn bậc $n$ của $1$. Khi đó ta có
+tính chất $W_n^r = W_{n/r}$ nếu $r \mid n$. Khi đó $A_1$ và $X$ có thể viết lại
+thành \begin{align}
+  A_1(j_0, k_0) &= \sum_{k_1} A(k_1, k_0) \cdot W_N^{j_0k_1r_2}, \\
+  &= \sum_{k_1} A(k_1, k_0) \cdot W_{r_1}^{j_0k_1}; \\
+  \intertext{và}
+  X(j_1, j_0) &= \sum_{k_0} A_1(j_0, k_0) \cdot W^{(r_1j_1 + j_0)k_0}, \\
+  &= \sum_{k_0} \bigl(W^{j_0k_0}A_1(j_0, k_0)\bigr) \cdot W_{r_2}^{j_1k_0}.
+\end{align} Khi đó $A_1$ có thể xem là $r_2$ bài toán con với kích thước $r_1$.
+Sau đó mỗi giá trị $A_1$ được nhân một hệ số xoay (twiddle factor) tương ứng.
+Cuối cùng $X$ có thể tính như $r_1$ bài toán con kích thước $r_2$. Kí hiệu
+$M(n)$ là số phép nhân (phức) của bài toán kích thước $n$. Khi này số phép nhân
+của thuật toán này là \begin{equation}
+  M(N) = M(r_1) + M(r_2) + N.
+\end{equation}
+
 % \subsection{Mã giả}
 %
 % Ta thấy rằng, mảng $A_i$ có thể được chia thành $N/r_i$ khối tính độc lập nhau.
